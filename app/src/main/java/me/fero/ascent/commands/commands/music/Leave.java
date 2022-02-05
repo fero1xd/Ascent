@@ -61,4 +61,5 @@ public class Leave implements ICommand {
     public String getType() {
         return "music";
     }
+
 }

@@ -37,9 +37,12 @@ public class CommandManager {
         addCommand(new Shuffle());
         addCommand(new Remove());
         addCommand(new Search(waiter));
-//        addCommand(new ChangePrefix());
+        addCommand(new ChangePrefix());
         addCommand(new Invite());
         addCommand(new Profile());
+        addCommand(new Move());
+
+
     }
 
     private void addCommand(ICommand cmd) {
@@ -66,9 +69,9 @@ public class CommandManager {
         return null;
     }
 
-   void handle(GuildMessageReceivedEvent event) {
+   void handle(GuildMessageReceivedEvent event, String prefix) {
         String[] split = event.getMessage().getContentRaw()
-                .replaceFirst("(?i)" + Pattern.quote(Config.get("prefix")), "")
+                .replaceFirst("(?i)" + Pattern.quote(prefix), "")
                 .split("\\s+");
 
         String invoke = split[0].toLowerCase();

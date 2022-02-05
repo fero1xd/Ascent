@@ -1,11 +1,14 @@
 package me.fero.ascent.commands.commands.music;
 
+import me.duncte123.botcommons.messaging.EmbedUtils;
 import me.fero.ascent.Config;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.database.VeryBadDesign;
 import me.fero.ascent.lavaplayer.PlayerManager;
 
 import me.fero.ascent.utils.Embeds;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.net.URL;
@@ -14,8 +17,12 @@ public class ScPlay implements ICommand {
     @Override
     public void handle(CommandContext ctx) {
         final TextChannel channel = ctx.getChannel();
+        String prefix = VeryBadDesign.PREFIXES.get(ctx.getGuild().getIdLong());
+
         if(ctx.getArgs().isEmpty()) {
-            channel.sendMessage("Correct usage is " + Config.get("prefix") + "play <youtube_link>/").queue();
+            EmbedBuilder builder = EmbedUtils.getDefaultEmbed();
+            builder.setDescription("Correct usage is " + prefix + this.getName() + " <query>");
+            channel.sendMessageEmbeds(builder.build()).queue();
         }
 
 
@@ -62,6 +69,6 @@ public class ScPlay implements ICommand {
 
     @Override
     public String getUsage() {
-        return Config.get("prefix") + "scplay <track_name>";
+        return "scplay <track_name>";
     }
 }

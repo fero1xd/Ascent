@@ -2,6 +2,7 @@ package me.fero.ascent.utils;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.duncte123.botcommons.messaging.EmbedUtils;
+import me.fero.ascent.Config;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -148,5 +149,13 @@ public class Embeds {
 
         return builder;
 
+    }
+
+    public static EmbedBuilder introEmbed(Member jda, String prefix) {
+        String title = "Ascent";
+        String body  = "Thanks for adding ascent to your server..\nType " + prefix + "help for more info";
+
+        EmbedBuilder builder = Embeds.createBuilder(title, body, "Created by " + Config.get("DEV_NAME"), null, Color.RED).setThumbnail(jda.getEffectiveAvatarUrl());
+        return builder;
     }
 }

@@ -68,6 +68,6 @@ public class Search implements ICommand {
 
     @Override
     public String getUsage() {
-        return Config.get("prefix") + "search <track_name>";
+        return "search <track_name>";
     }
 }

@@ -4,6 +4,7 @@ import me.fero.ascent.CommandManager;
 import me.fero.ascent.Config;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.database.VeryBadDesign;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -22,27 +23,25 @@ public class Help implements ICommand {
     public void handle(CommandContext ctx) {
         List<String> args = ctx.getArgs();
         TextChannel channel = ctx.getChannel();
+        String prefix = VeryBadDesign.PREFIXES.get(ctx.getGuild().getIdLong());
         if(args.isEmpty()) {
             StringBuilder musicBuilder = new StringBuilder();
             StringBuilder generalBuilder = new StringBuilder();
 
-//            manager.getCommands().stream().map(ICommand::cmd).forEach(
-//                    (it) -> builder.append("`").append(Config.get("prefix")).append(it).append("`").append().append("\n")
-//            );
 
             for(ICommand cmd : manager.getCommands()) {
                 if(cmd.getType().equalsIgnoreCase("music")) {
-                    musicBuilder.append("`").append(Config.get("prefix")).append(cmd.getName()).append("` ").append(cmd.getHelp()).append("\n");
+                    musicBuilder.append("`").append(prefix).append(cmd.getName()).append("` ").append(cmd.getHelp()).append("\n");
                 }
                 else {
-                    generalBuilder.append("`").append(Config.get("prefix")).append(cmd.getName()).append("` ").append(cmd.getHelp()).append("\n");
+                    generalBuilder.append("`").append(prefix).append(cmd.getName()).append("` ").append(cmd.getHelp()).append("\n");
 
                 }
             }
 
             EmbedBuilder builder1 = Embeds.helpEmbed(ctx.getMember());
 
-            builder1.setDescription("Use "  + Config.get("prefix") + "help <cmd_name> for more help");
+            builder1.setDescription("Use "  + prefix + "help <cmd_name> for more help");
             builder1.addField("General 🧬", generalBuilder.toString(), false);
             builder1.addField("Music 📯", musicBuilder.toString(), false);
 
@@ -61,7 +60,7 @@ public class Help implements ICommand {
         }
 
         if(command.getUsage() != null) {
-            channel.sendMessageEmbeds(Embeds.createBuilder(null, command.getUsage(), null, null, null).build()).queue();
+            channel.sendMessageEmbeds(Embeds.createBuilder(null, prefix + command.getUsage(), null, null, null).build()).queue();
         }
         else {
             channel.sendMessageEmbeds(Embeds.createBuilder(null, command.getHelp(), null, null, null).build()).queue();

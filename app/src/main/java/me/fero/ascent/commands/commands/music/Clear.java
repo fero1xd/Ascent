@@ -50,4 +50,9 @@ public class Clear implements ICommand {
     public String getType() {
         return "music";
     }
+
+    @Override
+    public List<String> getAliases() {
+        return List.of("cls");
+    }
 }

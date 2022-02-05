@@ -66,6 +66,11 @@ public class Volume implements ICommand {
 
     @Override
     public String getUsage() {
-        return Config.get("prefix") + "volume <0-100>";
+        return "volume <0-100>";
+    }
+
+    @Override
+    public List<String> getAliases() {
+        return List.of("vol");
     }
 }

@@ -19,7 +19,7 @@ public class Invite implements ICommand {
                         ctx.getMember().getEffectiveAvatarUrl(),
                         null);
         builder.addField("Link", invite, false);
-        builder.setThumbnail(ctx.getGuild().getIconUrl());
+        builder.setThumbnail(ctx.getSelfMember().getEffectiveAvatarUrl());
 
         ctx.getChannel().sendMessageEmbeds(builder.build()).queue();
 

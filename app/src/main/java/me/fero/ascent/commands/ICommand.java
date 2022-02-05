@@ -17,4 +17,6 @@ public interface ICommand {
     default String getType() {
         return "";
     }
+
+
 }

@@ -66,7 +66,8 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
-        System.out.println("ERROR");
+//        this.player.startTrack(track.makeClone(), false);
+
     }
 
 

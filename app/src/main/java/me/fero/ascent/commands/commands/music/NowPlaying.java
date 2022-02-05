@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class NowPlaying implements ICommand {
@@ -64,7 +65,10 @@ public class NowPlaying implements ICommand {
         return "Shows the currently playing song";
     }
 
-
+    @Override
+    public List<String> getAliases() {
+        return List.of("np","pb");
+    }
 
     @Override
     public String getType() {

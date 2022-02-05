@@ -6,6 +6,7 @@ package me.fero.ascent;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.duncte123.botcommons.messaging.EmbedUtils;
+import me.fero.ascent.database.SqliteDataSource;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -13,11 +14,13 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 import javax.security.auth.login.LoginException;
+import java.sql.SQLException;
 import java.util.EnumSet;
 
 public class Bot {
-    private Bot() throws LoginException {
+    private Bot() throws LoginException, SQLException {
 
+        SqliteDataSource.getConnection();
         EmbedUtils.setEmbedBuilder(
                 () -> new EmbedBuilder()
                         .setColor(0x3883d9)
@@ -37,14 +40,14 @@ public class Bot {
                 CacheFlag.EMOTE
         ));
         jda.enableCache(CacheFlag.VOICE_STATE);
-        jda.setActivity(Activity.listening("good music"));
+//        jda.setActivity(Activity.listening("good music"));
 
-        jda.addEventListeners(new Listener(waiter, jda), waiter);
+        jda.addEventListeners(new Listener(waiter), waiter);
         jda.build();
     }
 
 
-    public static void main(String[] args) throws LoginException {
+    public static void main(String[] args) throws LoginException, SQLException{
         new Bot();
     }
 

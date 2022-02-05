@@ -92,6 +92,6 @@ public class Seek implements ICommand {
 
     @Override
     public String getUsage() {
-        return Config.get("prefix") + "seek <time_stamp>";
+        return "seek <time_stamp>";
     }
 }

@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.awt.*;
+import java.util.List;
 
 @SuppressWarnings("ConstantConditions")
 public class Join implements ICommand {
@@ -59,5 +60,8 @@ public class Join implements ICommand {
         return "music";
     }
 
-
+    @Override
+    public List<String> getAliases() {
+        return List.of("j");
+    }
 }

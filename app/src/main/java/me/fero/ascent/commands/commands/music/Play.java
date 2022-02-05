@@ -4,6 +4,7 @@ import me.duncte123.botcommons.messaging.EmbedUtils;
 import me.fero.ascent.Config;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.database.VeryBadDesign;
 import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -17,15 +18,18 @@ import net.dv8tion.jda.api.managers.AudioManager;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 public class Play implements ICommand {
-    @SuppressWarnings("ConstantConditions")
     @Override
     public void handle(CommandContext ctx) {
         final TextChannel channel = ctx.getChannel();
+
+        String prefix = VeryBadDesign.PREFIXES.get(ctx.getGuild().getIdLong());
+
         if(ctx.getArgs().isEmpty()) {
             EmbedBuilder builder = EmbedUtils.getDefaultEmbed();
-            builder.setDescription("Correct usage is " + Config.get("prefix") + "play <query/link>");
+            builder.setDescription("Correct usage is " + prefix + this.getName() + " <query/link>");
             channel.sendMessageEmbeds(builder.build()).queue();
         }
 
@@ -56,7 +60,7 @@ public class Play implements ICommand {
 
     @Override
     public String getUsage() {
-        return Config.get("prefix") + "play <track_name/link>";
+        return "play <track_name/link>";
     }
 
     private boolean isUrl(String url) {
@@ -72,5 +76,8 @@ public class Play implements ICommand {
     public String getType() {
         return "music";
     }
-
+    @Override
+    public List<String> getAliases() {
+        return List.of("p");
+    }
 }

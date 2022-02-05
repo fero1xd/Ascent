@@ -30,6 +30,9 @@ dependencies {
     implementation 'com.sedmelluq:lavaplayer:1.3.78'
     implementation group: 'org.menudocs', name: 'paste-client-java', version: '1.0.16'
     implementation group:'org.xerial', name:'sqlite-jdbc', version:'3.8.11.2'
+    implementation group: 'com.zaxxer', name: 'HikariCP', version: '3.4.1'
+
+
 
 }
 
