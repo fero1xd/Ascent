@@ -37,16 +37,28 @@ public class NowPlaying implements ICommand {
 
 
         EmbedBuilder builder = Embeds.songEmbed(member, playingTrack);
-
+        builder.setTitle("Now playing 💿");
 
 
         long fullMillis = playingTrack.getPosition();
-        String formattedFull = String.format("%02d:%02d",
+        String formattedFull;
 
-                TimeUnit.MILLISECONDS.toMinutes(fullMillis) -
-                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(fullMillis)), // The change is in this line
-                TimeUnit.MILLISECONDS.toSeconds(fullMillis) -
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(fullMillis)));
+        if(fullMillis >= 3600000) {
+            formattedFull = String.format("%02d:%02d:%02d",
+                    TimeUnit.MILLISECONDS.toHours(fullMillis),
+                    TimeUnit.MILLISECONDS.toMinutes(fullMillis) -
+                            TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(fullMillis)),
+                    TimeUnit.MILLISECONDS.toSeconds(fullMillis) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(fullMillis)));
+
+        }
+        else {
+            formattedFull = String.format("%02d:%02d",
+                    TimeUnit.MILLISECONDS.toMinutes(fullMillis) -
+                            TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(fullMillis)), // The change is in this line
+                    TimeUnit.MILLISECONDS.toSeconds(fullMillis) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(fullMillis)));
+        }
 
         if(!playingTrack.getInfo().isStream) {
             builder.addField("Current position", formattedFull + " minutes", false);

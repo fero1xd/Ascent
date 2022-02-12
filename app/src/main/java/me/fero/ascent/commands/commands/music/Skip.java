@@ -10,6 +10,8 @@ import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 
+import java.util.List;
+
 public class Skip implements ICommand {
     @Override
     public void handle(CommandContext ctx) {
@@ -37,6 +39,12 @@ public class Skip implements ICommand {
     @Override
     public String getHelp() {
         return "Skips the current song";
+    }
+
+
+    @Override
+    public List<String> getAliases() {
+        return List.of("s");
     }
 
     @Override

@@ -41,8 +41,7 @@ public class CommandManager {
         addCommand(new Invite());
         addCommand(new Profile());
         addCommand(new Move());
-
-
+        addCommand(new DevInfo());
     }
 
     private void addCommand(ICommand cmd) {
@@ -84,10 +83,8 @@ public class CommandManager {
 
             event.getChannel().sendTyping().queue();
 
-//            Listener.LOGGER.info("Executing Command " + cmd.getName());
 
             if(cmd.getType().equalsIgnoreCase("music")) {
-//                MusicCommand musicCommand = new MusicCommand();
                 MusicCommand.handleMusicCommands(ctx, cmd);
                 return;
             }

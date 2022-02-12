@@ -101,11 +101,24 @@ public class Embeds {
         boolean isStream = track.getInfo().isStream;
 
         long millis = track.getDuration();
-        String formattedCurrent = String.format("%02d:%02d",
-                TimeUnit.MILLISECONDS.toMinutes(millis) -
-                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)), // The change is in this line
-                TimeUnit.MILLISECONDS.toSeconds(millis) -
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
+        String formattedCurrent;
+        if(millis >= 3600000) {
+            formattedCurrent = String.format("%02d:%02d:%02d",
+                    TimeUnit.MILLISECONDS.toHours(millis),
+                    TimeUnit.MILLISECONDS.toMinutes(millis) -
+                            TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)),
+                    TimeUnit.MILLISECONDS.toSeconds(millis) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
+
+        }
+        else {
+            formattedCurrent = String.format("%02d:%02d",
+                    TimeUnit.MILLISECONDS.toMinutes(millis) -
+                            TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)), // The change is in this line
+                    TimeUnit.MILLISECONDS.toSeconds(millis) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
+        }
+
 
 
         builder.addField("Duration", track.getInfo().isStream ? "This is a live stream" : formattedCurrent + " minutes", false);
@@ -113,6 +126,8 @@ public class Embeds {
         if(isStream) {
             builder.addField("Live","Yes", false);
         }
+
+
         builder.setThumbnail("https://i1.ytimg.com/vi/" + track.getIdentifier() + "/hqdefault.jpg");
         return builder;
 

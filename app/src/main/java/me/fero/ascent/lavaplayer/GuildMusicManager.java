@@ -2,6 +2,7 @@ package me.fero.ascent.lavaplayer;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeHttpContextFilter;
 
 public class GuildMusicManager {
     public final AudioPlayer audioPlayer;
@@ -19,6 +20,7 @@ public class GuildMusicManager {
         // Make a send handler for audio
         this.sendHandler = new AudioPlayerSendHandler(this.audioPlayer);
     }
+
 
     public AudioPlayerSendHandler getSendHandler() {
         return this.sendHandler;

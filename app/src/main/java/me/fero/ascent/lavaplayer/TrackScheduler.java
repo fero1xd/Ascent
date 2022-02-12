@@ -5,18 +5,21 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import me.duncte123.botcommons.messaging.EmbedUtils;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+
 
 public class TrackScheduler extends AudioEventAdapter {
     final public AudioPlayer player;
 
     public List<AudioTrack> queue = new ArrayList<>();
     public boolean isRepeating = false;
+    public TextChannel cachedChannel = null;
+
 
     public TrackScheduler(AudioPlayer player) {
         this.player = player;
@@ -27,8 +30,6 @@ public class TrackScheduler extends AudioEventAdapter {
         if(!this.player.startTrack(track, true)) {
             this.queue.add(track);
         }
-
-
     }
 
     public void nextTrack() {
@@ -40,12 +41,9 @@ public class TrackScheduler extends AudioEventAdapter {
 
         try {
             this.player.startTrack(queue.remove(0), false);
-
         } catch (Exception e) {
-            return;
+            e.printStackTrace();
         }
-
-
     }
 
     @Override
@@ -60,14 +58,25 @@ public class TrackScheduler extends AudioEventAdapter {
                 this.player.startTrack(track.makeClone(), false);
                 return;
             }
+            if(this.queue.isEmpty() && cachedChannel != null) {
+                this.isRepeating = false;
+                this.queue.clear();
+                this.player.stopTrack();
+
+                AudioManager audioManager = cachedChannel.getGuild().getAudioManager();
+                audioManager.closeAudioConnection();
+                return;
+            }
             nextTrack();
         }
     }
 
     @Override
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
-//        this.player.startTrack(track.makeClone(), false);
-
+        if(this.cachedChannel != null) {
+            this.cachedChannel.sendMessageEmbeds(EmbedUtils.getDefaultEmbed().setDescription("Track loading Failed, try again later !").build()).queue();
+        }
+        exception.printStackTrace();
     }
 
 

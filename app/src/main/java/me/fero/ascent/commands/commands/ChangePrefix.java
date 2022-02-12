@@ -2,15 +2,13 @@ package me.fero.ascent.commands.commands;
 
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
-import me.fero.ascent.database.SqliteDataSource;
+import me.fero.ascent.database.DatabaseManager;
 import me.fero.ascent.database.VeryBadDesign;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.List;
 
 public class ChangePrefix implements ICommand {
@@ -51,18 +49,7 @@ public class ChangePrefix implements ICommand {
 
     private void updatePrefix(long guildId, String newPrefix) {
         VeryBadDesign.PREFIXES.put(guildId, newPrefix);
-
-        try(final PreparedStatement stmt = SqliteDataSource.getConnection()
-                // language=SQLite
-                .prepareStatement("UPDATE guild_settings SET prefix = ? WHERE guild_id = ?")) {
-
-            stmt.setString(1, String.valueOf(newPrefix));
-            stmt.setString(2, String.valueOf(guildId));
-
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        DatabaseManager.INSTANCE.setPrefix(guildId, newPrefix);
 
     }
 }

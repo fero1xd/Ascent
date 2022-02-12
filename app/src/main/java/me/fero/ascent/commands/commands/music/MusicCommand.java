@@ -2,6 +2,8 @@ package me.fero.ascent.commands.commands.music;
 
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.lavaplayer.GuildMusicManager;
+import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -30,6 +32,8 @@ public class MusicCommand  {
 
         AudioManager audioManager = ctx.getGuild().getAudioManager();
         audioManager.setSelfDeafened(true);
+        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
+
         if(!selfVoiceState.inVoiceChannel()) {
             if(cmd.getName().equalsIgnoreCase("leave")) {
                 EmbedBuilder builder = Embeds.alreadyConnectedToVcEmbed(member);
@@ -55,6 +59,7 @@ public class MusicCommand  {
                 final VoiceChannel memberChannel = memberVoiceState.getChannel();
                 audioManager.openAudioConnection(memberChannel);
 
+                musicManager.scheduler.cachedChannel = ctx.getChannel();
                 cmd.handle(ctx);
             }
 
@@ -69,10 +74,9 @@ public class MusicCommand  {
 
         if (!memberVoiceState.getChannel().getId().equals(selfVoiceState.getChannel().getId())) {
 
-            if(
-                    cmd.getName().equalsIgnoreCase("join")
-            ) {
+            if(cmd.getName().equalsIgnoreCase("join")) {
                 audioManager.openAudioConnection(memberVoiceState.getChannel());
+                musicManager.scheduler.cachedChannel = ctx.getChannel();
 
                 cmd.handle(ctx);
             }
@@ -89,6 +93,7 @@ public class MusicCommand  {
         }
 
 
+        musicManager.scheduler.cachedChannel = ctx.getChannel();
 
         cmd.handle(ctx);
 

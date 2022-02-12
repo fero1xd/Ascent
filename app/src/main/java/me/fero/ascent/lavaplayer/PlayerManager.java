@@ -31,7 +31,8 @@ import java.util.concurrent.TimeUnit;
 public class PlayerManager {
     private static PlayerManager instance;
     private final Map<Long, GuildMusicManager> musicManagers;
-    private final AudioPlayerManager audioPlayerManager;
+    public final AudioPlayerManager audioPlayerManager;
+
 
     public PlayerManager() {
         this.musicManagers = new HashMap<>();
@@ -189,19 +190,43 @@ public class PlayerManager {
         });
     }
 
+
+    public void queueMultipleUrl(CommandContext ctx, List<String> urls) {
+        TextChannel channel = ctx.getChannel();
+        GuildMusicManager musicManager = this.getMusicManager(channel.getGuild());
+
+        for(String url : urls) {
+            this.audioPlayerManager.loadItemOrdered(musicManager, url, new AudioLoadResultHandler() {
+                @Override
+                public void trackLoaded(AudioTrack track) {
+                    musicManager.scheduler.queue(track);
+                }
+
+                @Override
+                public void playlistLoaded(AudioPlaylist playlist) {
+
+                }
+
+                @Override
+                public void noMatches() {
+
+                }
+
+                @Override
+                public void loadFailed(FriendlyException exception) {
+
+                }
+            });
+
+        }
+    }
+
     public static PlayerManager getInstance() {
         if(instance == null) {
             instance = new PlayerManager();
         }
 
         return instance;
-    }
-    private String formatTime(long timeInMillis) {
-        final long hours = timeInMillis / TimeUnit.HOURS.toMillis(1);
-        final long minutes = timeInMillis / TimeUnit.MINUTES.toMillis(1);
-        final long seconds = timeInMillis % TimeUnit.MINUTES.toMillis(1) / TimeUnit.SECONDS.toMillis(1);
-
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 
 }

@@ -17,8 +17,8 @@ import java.util.List;
 
 
 public class Queue implements ICommand {
+
     @Override
-    @SuppressWarnings("ConstantConditions")
     public void handle(CommandContext ctx) {
         final TextChannel channel = ctx.getChannel();
 
@@ -38,6 +38,8 @@ public class Queue implements ICommand {
         builder.setTitle("Queue for " + ctx.getGuild().getName() + " 📀");
         builder.setFooter("Requested by " + ctx.getMember().getEffectiveName(), ctx.getMember().getEffectiveAvatarUrl());
 
+
+
         for (int i = 0; i <  trackCount; i++) {
             final AudioTrack track = trackList.get(i);
             final AudioTrackInfo info = track.getInfo();
@@ -47,8 +49,11 @@ public class Queue implements ICommand {
         }
 
         if (trackList.size() > trackCount) {
-            builder.appendDescription("And `" + String.valueOf(trackList.size() - trackCount) + "` more...");
+            builder.appendDescription("And `" + String.valueOf(trackList.size() - trackCount) +"` more...");
+
         }
+
+
 
         channel.sendMessageEmbeds(builder.build()).queue();
 
@@ -64,6 +69,11 @@ public class Queue implements ICommand {
         return "Shows the queue upto 20 tracks";
     }
 
+
+    @Override
+    public List<String> getAliases() {
+        return List.of("q");
+    }
 
     @Override
     public String getType() {
