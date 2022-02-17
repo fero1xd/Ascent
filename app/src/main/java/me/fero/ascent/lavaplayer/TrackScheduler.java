@@ -59,9 +59,7 @@ public class TrackScheduler extends AudioEventAdapter {
                 return;
             }
             if(this.queue.isEmpty() && cachedChannel != null) {
-                this.isRepeating = false;
-                this.queue.clear();
-                this.player.stopTrack();
+                this.player.startTrack(null, false);
 
                 AudioManager audioManager = cachedChannel.getGuild().getAudioManager();
                 audioManager.closeAudioConnection();

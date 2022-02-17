@@ -4,6 +4,7 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.commands.commands.*;
+import me.fero.ascent.commands.commands.moderation.*;
 import me.fero.ascent.commands.commands.music.*;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
@@ -42,6 +43,14 @@ public class CommandManager {
         addCommand(new Profile());
         addCommand(new Move());
         addCommand(new DevInfo());
+
+//        addCommand(new Purge());
+//        addCommand(new Kick());
+//        addCommand(new Mute());
+//        addCommand(new Unmute());
+        addCommand(new Vote());
+        addCommand(new SetFairMode());
+
     }
 
     private void addCommand(ICommand cmd) {

@@ -24,12 +24,7 @@ public class Embeds {
             builder.setDescription(description);
         }
         if(footer != null) {
-            if(footerUrl != null) {
-                builder.setFooter(footer, footerUrl);
-            }
-            else {
-                builder.setFooter(footer);
-            }
+            builder.setFooter(footer, footerUrl);
         }
         if(color != null) {
             builder.setColor(color);

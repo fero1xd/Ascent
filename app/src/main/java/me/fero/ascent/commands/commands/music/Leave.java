@@ -29,7 +29,7 @@ public class Leave implements ICommand {
 
         musicManager.scheduler.isRepeating = false;
         musicManager.scheduler.queue.clear();
-        musicManager.scheduler.player.stopTrack();
+        musicManager.scheduler.player.startTrack(null, false);
 
         AudioManager audioManager = ctx.getGuild().getAudioManager();
         audioManager.closeAudioConnection();
@@ -37,8 +37,6 @@ public class Leave implements ICommand {
         String desc = "Disconnected from "+ memberVoiceState.getChannel().getAsMention();
         EmbedBuilder builder = Embeds.createBuilder("Disconnected", desc, "Requested by " + member.getEffectiveName(), member.getEffectiveAvatarUrl(), null);
         channel.sendMessageEmbeds(builder.build()).queue();
-
-
     }
     @Override
     public String getName() {

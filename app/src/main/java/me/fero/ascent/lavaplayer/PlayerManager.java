@@ -59,6 +59,7 @@ public class PlayerManager {
             @Override
             public void trackLoaded(AudioTrack track) {
                 musicManager.scheduler.queue(track);
+                track.setUserData(ctx.getAuthor().getIdLong());
                 channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
             }
 
@@ -79,8 +80,10 @@ public class PlayerManager {
                     channel.sendMessageEmbeds(builder.build())
                             .queue();
                     for(AudioTrack track : tracks) {
+                        track.setUserData(ctx.getAuthor().getIdLong());
                         musicManager.scheduler.queue(track);
                     }
+
                     return;
                 }
 
@@ -121,7 +124,7 @@ public class PlayerManager {
                                         final AudioTrack track = tracks.get(0);
                                         channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
 
-
+                                        track.setUserData(ctx.getAuthor().getIdLong());
                                         musicManager.scheduler.queue(track);
                                         return;
                                     }
@@ -134,6 +137,7 @@ public class PlayerManager {
                                         message.delete().queue();
                                         e.getMessage().delete().queue();
                                         channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), trackx).build()).queue();
+                                        trackx.setUserData(ctx.getAuthor().getIdLong());
 
                                         musicManager.scheduler.queue(trackx);
                                         return;
@@ -143,6 +147,7 @@ public class PlayerManager {
                                         message.delete().queue();
                                         e.getMessage().delete().queue();
                                         channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
+                                        track.setUserData(ctx.getAuthor().getIdLong());
 
                                         musicManager.scheduler.queue(track);
                                     }
@@ -154,6 +159,7 @@ public class PlayerManager {
                                     final AudioTrack track = tracks.get(0);
                                     channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
 
+                                    track.setUserData(ctx.getAuthor().getIdLong());
 
                                     musicManager.scheduler.queue(track);
                                 }
@@ -168,6 +174,7 @@ public class PlayerManager {
 
                 final AudioTrack track = tracks.get(0);
                 channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
+                track.setUserData(ctx.getAuthor().getIdLong());
 
                 musicManager.scheduler.queue(track);
             }
@@ -199,6 +206,7 @@ public class PlayerManager {
             this.audioPlayerManager.loadItemOrdered(musicManager, url, new AudioLoadResultHandler() {
                 @Override
                 public void trackLoaded(AudioTrack track) {
+                    track.setUserData(ctx.getAuthor().getIdLong());
                     musicManager.scheduler.queue(track);
                 }
 

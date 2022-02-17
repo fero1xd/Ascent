@@ -93,7 +93,7 @@ public class Listener extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceUpdate(@NotNull GuildVoiceUpdateEvent event) {
-        if(!event.getMember().getUser().isBot()) {
+        if(event.getMember().getUser() != event.getGuild().getSelfMember().getUser()) {
             VoiceChannel channelLeft = event.getChannelLeft();
             if(channelLeft == null) {
                 return;
@@ -104,7 +104,7 @@ public class Listener extends ListenerAdapter {
 
             boolean canClose = false;
             for(Member member : members) {
-                if(!member.getUser().isBot()) {
+                if(member.getUser() != event.getGuild().getSelfMember().getUser()) {
                     copy.add(member);
                 }
                 else {
@@ -124,6 +124,15 @@ public class Listener extends ListenerAdapter {
             }
 
         }
+//        else if(event.getMember().getUser() == event.getGuild().getSelfMember().getUser()){
+//            if(event.getChannelLeft() != null && event.getChannelJoined() == null) {
+//                GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(event.getGuild());
+//
+//                musicManager.scheduler.isRepeating = false;
+//                musicManager.scheduler.queue.clear();
+//                musicManager.scheduler.player.stopTrack();
+//            }
+//        }
     }
 
 

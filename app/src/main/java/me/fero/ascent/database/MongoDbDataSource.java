@@ -41,6 +41,7 @@ public class MongoDbDataSource implements DatabaseManager{
         if(cursor == null) {
             Document newDoc = new Document("_id", guildId);
             newDoc.append("prefix", Config.get("prefix"));
+            newDoc.append("fairMode", false);
             guild_settings.insertOne(newDoc);
             return Config.get("prefix");
         }
@@ -55,5 +56,26 @@ public class MongoDbDataSource implements DatabaseManager{
 
         this.db.getCollection("guild_settings").updateOne(filter, updated);
     }
+
+    @Override
+    public boolean isUsingFairMode(long guildId) {
+        BasicDBObject whereQuery = new BasicDBObject();
+        whereQuery.put("_id", guildId);
+
+        MongoCollection<Document> guild_settings = this.db.getCollection("guild_settings");
+
+        Document cursor = guild_settings.find(whereQuery).first();
+        return cursor.getBoolean("fairMode");
+
+    }
+
+    @Override
+    public void setFairMode(long guildId, boolean fairMode) {
+        Bson filter = Filters.eq("_id", guildId);
+        Bson updated = Updates.set("fairMode", fairMode);
+
+        this.db.getCollection("guild_settings").updateOne(filter, updated);
+    }
+
 
 }

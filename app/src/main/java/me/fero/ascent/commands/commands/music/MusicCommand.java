@@ -65,7 +65,7 @@ public class MusicCommand  {
 
             else {
                 EmbedBuilder builder = Embeds.notInSameVcEmbed(member);
-                builder.setDescription("Bot must be present in a VoiceChannel to use this Command\n");
+                builder.setDescription("Bot must be present in a VoiceChannel to use this Command");
                 channel.sendMessageEmbeds(builder.build()).queue();
             }
             return;
@@ -73,16 +73,7 @@ public class MusicCommand  {
         }
 
         if (!memberVoiceState.getChannel().getId().equals(selfVoiceState.getChannel().getId())) {
-
-            if(cmd.getName().equalsIgnoreCase("join")) {
-                audioManager.openAudioConnection(memberVoiceState.getChannel());
-                musicManager.scheduler.cachedChannel = ctx.getChannel();
-
-                cmd.handle(ctx);
-            }
-            else {
-                channel.sendMessageEmbeds(Embeds.notInSameVcEmbed(member).build()).queue();
-            }
+            channel.sendMessageEmbeds(Embeds.notInSameVcEmbed(member).setDescription("Already connected to a different channel").build()).queue();
             return;
         }
         else {

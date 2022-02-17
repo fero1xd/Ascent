@@ -9,4 +9,7 @@ public interface DatabaseManager {
 
     String getPrefix(long guildId);
     void setPrefix(long guildId, String newPrefix);
+
+    boolean isUsingFairMode(long guildId);
+    void setFairMode(long guildId, boolean fairMode);
 }

@@ -4,6 +4,7 @@ import me.fero.ascent.CommandManager;
 import me.fero.ascent.Config;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.database.DatabaseManager;
 import me.fero.ascent.database.VeryBadDesign;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -27,11 +28,15 @@ public class Help implements ICommand {
         if(args.isEmpty()) {
             StringBuilder musicBuilder = new StringBuilder();
             StringBuilder generalBuilder = new StringBuilder();
+            StringBuilder moderatorBuilder = new StringBuilder();
 
 
             for(ICommand cmd : manager.getCommands()) {
                 if(cmd.getType().equalsIgnoreCase("music")) {
                     musicBuilder.append("`").append(prefix).append(cmd.getName()).append("` ").append(cmd.getHelp()).append("\n");
+                }
+                else if(cmd.getType().equalsIgnoreCase("moderator")) {
+                    moderatorBuilder.append("`").append(prefix).append(cmd.getName()).append("` ").append(cmd.getHelp()).append("\n");
                 }
                 else {
                     generalBuilder.append("`").append(prefix).append(cmd.getName()).append("` ").append(cmd.getHelp()).append("\n");
@@ -43,10 +48,12 @@ public class Help implements ICommand {
 
             builder1.setDescription("Use "  + prefix + "help <cmd_name> for more help");
             builder1.addField("General 🧬", generalBuilder.toString(), false);
+//            builder1.addField("Moderator 📳", moderatorBuilder.toString(), false);
             builder1.addField("Music 📯", musicBuilder.toString(), false);
 
+            boolean isUsingFairMode = DatabaseManager.INSTANCE.isUsingFairMode(ctx.getGuild().getIdLong());
 
-
+            builder1.setFooter("Fair mode is " + (isUsingFairMode ? "On" : "Off"));
             channel.sendMessageEmbeds(builder1.build()).queue();
 
             return;
