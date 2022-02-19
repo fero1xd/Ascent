@@ -23,6 +23,7 @@ public class Search implements ICommand {
         final TextChannel channel = ctx.getChannel();
         if(ctx.getArgs().isEmpty()) {
             channel.sendMessage("Correct usage is " + Config.get("prefix") + "play <youtube_link>/").queue();
+            return;
         }
 
         String link = String.join(" ", ctx.getArgs());

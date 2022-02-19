@@ -71,6 +71,14 @@ public class Remove implements ICommand {
                     return;
                 }
 
+                List<Member> members = ctx.getSelfMember().getVoiceState().getChannel().getMembers();
+                if(!members.contains(owner)) {
+                    musicManager.scheduler.queue.remove(index - 1);
+
+                    channel.sendMessageEmbeds(Embeds.createBuilder(null, "Track removed successfully", null, null, null).build()).queue();
+                    return;
+                }
+
                 if(ownerIdLong != ctx.getMember().getIdLong()) {
                     EmbedBuilder builder = Embeds.createBuilder(null, "You did not added this song to the queue so you cannot remove the song", null, null, null);
                     channel.sendMessageEmbeds(builder.build()).queue();

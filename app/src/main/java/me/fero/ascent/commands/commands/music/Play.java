@@ -39,6 +39,7 @@ public class Play implements ICommand {
             EmbedBuilder builder = EmbedUtils.getDefaultEmbed();
             builder.setDescription("Correct usage is " + prefix + this.getName() + " <query/link>");
             channel.sendMessageEmbeds(builder.build()).queue();
+            return;
         }
 
 
@@ -56,7 +57,7 @@ public class Play implements ICommand {
         }
         else {
             if(link.toLowerCase().startsWith("https://open.spotify.com/playlist/") || link.toLowerCase().startsWith("https://open.spotify.com/track/") || link.toLowerCase().startsWith("https://open.spotify.com/album/")) {
-                WebUtils.ins.getJSONObject("http://45.79.125.163:6000/api?url=" + link).async((json) -> {
+                WebUtils.ins.getJSONObject("http://"+ Config.get("ip") + ":6000/api?url=" + link).async((json) -> {
                     if(json.has("error")) {
                         channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Cannot get a spotfiy track or playlist", null, null, null).build()).queue();
                         return;

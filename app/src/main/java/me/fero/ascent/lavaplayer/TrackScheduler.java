@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import me.duncte123.botcommons.messaging.EmbedUtils;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 
@@ -19,14 +20,15 @@ public class TrackScheduler extends AudioEventAdapter {
     public List<AudioTrack> queue = new ArrayList<>();
     public boolean isRepeating = false;
     public TextChannel cachedChannel = null;
+    public Guild currentGuild = null;
 
 
-    public TrackScheduler(AudioPlayer player) {
+    public TrackScheduler(AudioPlayer player, Guild guild) {
         this.player = player;
+        this.currentGuild = guild;
     }
 
     public void queue(AudioTrack track) {
-
         if(!this.player.startTrack(track, true)) {
             this.queue.add(track);
         }
@@ -58,10 +60,8 @@ public class TrackScheduler extends AudioEventAdapter {
                 this.player.startTrack(track.makeClone(), false);
                 return;
             }
-            if(this.queue.isEmpty() && cachedChannel != null) {
-                this.player.startTrack(null, false);
-
-                AudioManager audioManager = cachedChannel.getGuild().getAudioManager();
+            if(this.queue.isEmpty() && currentGuild != null) {
+                AudioManager audioManager = currentGuild.getAudioManager();
                 audioManager.closeAudioConnection();
                 return;
             }

@@ -22,6 +22,7 @@ public class Skip implements ICommand {
         final TextChannel channel = ctx.getChannel();
         Guild guild = ctx.getGuild();
 
+
         GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
         AudioPlayer audioPlayer = musicManager.audioPlayer;
         if(audioPlayer.getPlayingTrack() == null) {
@@ -43,6 +44,14 @@ public class Skip implements ICommand {
             }
 
             if(owner == null) {
+                musicManager.scheduler.nextTrack();
+                EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
+                channel.sendMessageEmbeds(builder.build()).queue();
+                return;
+            }
+
+            List<Member> members = ctx.getSelfMember().getVoiceState().getChannel().getMembers();
+            if(!members.contains(owner)) {
                 musicManager.scheduler.nextTrack();
                 EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
                 channel.sendMessageEmbeds(builder.build()).queue();

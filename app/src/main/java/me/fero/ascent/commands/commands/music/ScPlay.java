@@ -23,6 +23,7 @@ public class ScPlay implements ICommand {
             EmbedBuilder builder = EmbedUtils.getDefaultEmbed();
             builder.setDescription("Correct usage is " + prefix + this.getName() + " <query>");
             channel.sendMessageEmbeds(builder.build()).queue();
+            return;
         }
 
 
