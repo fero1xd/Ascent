@@ -1,10 +1,9 @@
 package me.fero.ascent.commands.commands.music;
 
 import me.duncte123.botcommons.messaging.EmbedUtils;
-import me.fero.ascent.Config;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
-import me.fero.ascent.database.VeryBadDesign;
+import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.lavaplayer.PlayerManager;
 
 import me.fero.ascent.utils.Embeds;
@@ -17,7 +16,7 @@ public class ScPlay implements ICommand {
     @Override
     public void handle(CommandContext ctx) {
         final TextChannel channel = ctx.getChannel();
-        String prefix = VeryBadDesign.PREFIXES.get(ctx.getGuild().getIdLong());
+        String prefix = RedisDataStore.getInstance().getPrefix(ctx.getGuild().getIdLong());
 
         if(ctx.getArgs().isEmpty()) {
             EmbedBuilder builder = EmbedUtils.getDefaultEmbed();

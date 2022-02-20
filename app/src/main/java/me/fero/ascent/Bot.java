@@ -7,6 +7,9 @@ package me.fero.ascent;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeHttpContextFilter;
 import me.duncte123.botcommons.messaging.EmbedUtils;
+import me.fero.ascent.database.DatabaseManager;
+import me.fero.ascent.database.RedisDataStore;
+import me.fero.ascent.spotify.SpotifyAudioSourceManager;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -17,6 +20,11 @@ import java.util.EnumSet;
 
 public class Bot {
     private Bot() throws LoginException {
+        SpotifyAudioSourceManager instance = SpotifyAudioSourceManager.INSTANCE;
+        DatabaseManager instance1 = DatabaseManager.INSTANCE;
+        RedisDataStore instance2 = RedisDataStore.getInstance();
+
+
         EmbedUtils.setEmbedBuilder(
                 () -> new EmbedBuilder()
                         .setColor(0x3883d9)
@@ -36,9 +44,8 @@ public class Bot {
                 CacheFlag.EMOTE
         ));
         jda.enableCache(CacheFlag.VOICE_STATE);
-//        jda.setActivity(Activity.listening("good music"));
 
-        jda.addEventListeners(new Listener(waiter), waiter);
+        jda.addEventListeners(new Listener(waiter, instance2), waiter);
         jda.build();
         YoutubeHttpContextFilter.setPAPISID("gDIJZ27nqmM12kCm/Av7wzMjg-Dq5IMMG9");
         YoutubeHttpContextFilter.setPSID("GQjIL_RrduWKPps0jSZ8-hK4yj5Ua6zOkS0PPVmUKel3t-HKPM3NnFnpeo7VCMjro-W0hA.");

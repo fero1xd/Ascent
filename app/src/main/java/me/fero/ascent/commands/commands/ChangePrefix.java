@@ -3,7 +3,7 @@ package me.fero.ascent.commands.commands;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.database.DatabaseManager;
-import me.fero.ascent.database.VeryBadDesign;
+import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
@@ -48,7 +48,7 @@ public class ChangePrefix implements ICommand {
     }
 
     private void updatePrefix(long guildId, String newPrefix) {
-        VeryBadDesign.PREFIXES.put(guildId, newPrefix);
+        RedisDataStore.getInstance().setPrefix(guildId, newPrefix);
         DatabaseManager.INSTANCE.setPrefix(guildId, newPrefix);
 
     }

@@ -12,17 +12,13 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import me.duncte123.botcommons.messaging.EmbedUtils;
 import me.fero.ascent.Listener;
 import me.fero.ascent.commands.CommandContext;
+import me.fero.ascent.spotify.SpotifyAudioSourceManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.api.requests.restaction.MessageAction;
-import org.w3c.dom.Text;
 
-import javax.annotation.Nullable;
-import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,10 +46,18 @@ public class PlayerManager {
         });
     }
 
+    public void removeGuildMusicManager(Guild guild) {
+        this.musicManagers.remove(guild.getIdLong());
+    }
+
     public void loadAndPlay(CommandContext ctx, String query, boolean isSearchCmd, EventWaiter waiter) {
 
         TextChannel channel = ctx.getChannel();
         GuildMusicManager musicManager = this.getMusicManager(channel.getGuild());
+
+        if(SpotifyAudioSourceManager.INSTANCE.loadItem(ctx, query)) {
+            return;
+        }
 
         this.audioPlayerManager.loadItemOrdered(musicManager, query, new AudioLoadResultHandler() {
             @Override
@@ -198,36 +202,36 @@ public class PlayerManager {
     }
 
 
-    public void queueMultipleUrl(CommandContext ctx, List<String> urls) {
-        TextChannel channel = ctx.getChannel();
-        GuildMusicManager musicManager = this.getMusicManager(channel.getGuild());
-
-        for(String url : urls) {
-            this.audioPlayerManager.loadItemOrdered(musicManager, url, new AudioLoadResultHandler() {
-                @Override
-                public void trackLoaded(AudioTrack track) {
-                    track.setUserData(ctx.getAuthor().getIdLong());
-                    musicManager.scheduler.queue(track);
-                }
-
-                @Override
-                public void playlistLoaded(AudioPlaylist playlist) {
-
-                }
-
-                @Override
-                public void noMatches() {
-
-                }
-
-                @Override
-                public void loadFailed(FriendlyException exception) {
-
-                }
-            });
-
-        }
-    }
+//    public void queueMultipleUrl(CommandContext ctx, List<String> urls) {
+//        TextChannel channel = ctx.getChannel();
+//        GuildMusicManager musicManager = this.getMusicManager(channel.getGuild());
+//
+//        for(String url : urls) {
+//            this.audioPlayerManager.loadItemOrdered(musicManager, url, new AudioLoadResultHandler() {
+//                @Override
+//                public void trackLoaded(AudioTrack track) {
+//                    track.setUserData(ctx.getAuthor().getIdLong());
+//                    musicManager.scheduler.queue(track);
+//                }
+//
+//                @Override
+//                public void playlistLoaded(AudioPlaylist playlist) {
+//
+//                }
+//
+//                @Override
+//                public void noMatches() {
+//
+//                }
+//
+//                @Override
+//                public void loadFailed(FriendlyException exception) {
+//
+//                }
+//            });
+//
+//        }
+//    }
 
     public static PlayerManager getInstance() {
         if(instance == null) {

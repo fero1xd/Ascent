@@ -1,11 +1,10 @@
 package me.fero.ascent.commands.commands;
 
 import me.fero.ascent.CommandManager;
-import me.fero.ascent.Config;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.database.DatabaseManager;
-import me.fero.ascent.database.VeryBadDesign;
+import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -24,7 +23,9 @@ public class Help implements ICommand {
     public void handle(CommandContext ctx) {
         List<String> args = ctx.getArgs();
         TextChannel channel = ctx.getChannel();
-        String prefix = VeryBadDesign.PREFIXES.get(ctx.getGuild().getIdLong());
+//        String prefix = VeryBadDesign.PREFIXES.get(ctx.getGuild().getIdLong());
+        String prefix = RedisDataStore.getInstance().getPrefix(ctx.getGuild().getIdLong());
+
         if(args.isEmpty()) {
             StringBuilder musicBuilder = new StringBuilder();
             StringBuilder generalBuilder = new StringBuilder();
