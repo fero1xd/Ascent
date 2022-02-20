@@ -32,7 +32,6 @@ public class MusicCommand  {
 
         AudioManager audioManager = ctx.getGuild().getAudioManager();
         audioManager.setSelfDeafened(true);
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
 
         if(!selfVoiceState.inVoiceChannel()) {
             if(cmd.getName().equalsIgnoreCase("leave")) {
@@ -58,8 +57,6 @@ public class MusicCommand  {
 
                 final VoiceChannel memberChannel = memberVoiceState.getChannel();
                 audioManager.openAudioConnection(memberChannel);
-
-                musicManager.scheduler.cachedChannel = ctx.getChannel();
                 cmd.handle(ctx);
             }
 
@@ -82,10 +79,6 @@ public class MusicCommand  {
                 return;
             }
         }
-
-
-        musicManager.scheduler.cachedChannel = ctx.getChannel();
-
         cmd.handle(ctx);
 
     }

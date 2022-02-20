@@ -5,9 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-import me.duncte123.botcommons.messaging.EmbedUtils;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.util.ArrayList;
@@ -19,7 +17,6 @@ public class TrackScheduler extends AudioEventAdapter {
 
     public List<AudioTrack> queue = new ArrayList<>();
     public boolean isRepeating = false;
-    public TextChannel cachedChannel = null;
     public Guild currentGuild = null;
 
 
@@ -71,8 +68,13 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
-        if(this.cachedChannel != null) {
-            this.cachedChannel.sendMessageEmbeds(EmbedUtils.getDefaultEmbed().setDescription("Track loading Failed, try again later !").build()).queue();
+        if(currentGuild!=null) {
+            this.isRepeating = false;
+            this.queue.clear();
+            this.player.startTrack(null, false);
+
+            AudioManager audioManager = currentGuild.getAudioManager();
+            audioManager.closeAudioConnection();
         }
         exception.printStackTrace();
     }

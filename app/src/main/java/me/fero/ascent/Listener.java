@@ -115,6 +115,10 @@ public class Listener extends ListenerAdapter {
             if(channelLeft == null) {
                 return;
             }
+
+            if(event.getChannelJoined() != null) {
+                return;
+            }
             List<Member> members = channelLeft.getMembers();
             List<Member> copy = new ArrayList<>();
 
