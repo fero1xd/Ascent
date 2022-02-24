@@ -34,6 +34,9 @@ dependencies {
     implementation 'org.mongodb:mongodb-driver-sync:4.0.5'
     implementation 'se.michaelthelin.spotify:spotify-web-api-java:7.0.0'
     implementation "redis.clients:jedis:3.7.0"
+    implementation 'com.github.LowLevelSubmarine:GeniusLyricsAPI:1.0.3'
+
+
 
 
 

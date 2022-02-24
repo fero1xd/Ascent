@@ -75,6 +75,7 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
             this.getAlbum(ctx, url);
             return true;
         }
+
         return false;
     }
 

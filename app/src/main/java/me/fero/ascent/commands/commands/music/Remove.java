@@ -53,7 +53,8 @@ public class Remove implements ICommand {
         try {
 
             if(DatabaseManager.INSTANCE.isUsingFairMode(guild.getIdLong())) {
-                Object userData = musicManager.audioPlayer.getPlayingTrack().getUserData();
+
+                Object userData = musicManager.scheduler.queue.get(index - 1).getUserData();
                 String ownerId = userData.toString();
                 long ownerIdLong = Long.parseLong(ownerId);
 

@@ -43,11 +43,8 @@ public class CommandManager {
         addCommand(new Profile());
         addCommand(new Move());
         addCommand(new DevInfo());
+        addCommand(new Lyrics());
 
-//        addCommand(new Purge());
-//        addCommand(new Kick());
-//        addCommand(new Mute());
-//        addCommand(new Unmute());
         addCommand(new Vote());
         addCommand(new SetFairMode());
 

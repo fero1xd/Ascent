@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.Role;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -35,7 +36,8 @@ public class Embeds {
             builder.setColor(color);
         }
         else {
-            builder.setColor(Color.CYAN);
+            Color color1 = new Color((int) (Math.random() * 0x1000000));
+            builder.setColor(color1);
         }
 
 

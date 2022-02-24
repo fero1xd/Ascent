@@ -116,9 +116,6 @@ public class Listener extends ListenerAdapter {
                 return;
             }
 
-            if(event.getChannelJoined() != null) {
-                return;
-            }
             List<Member> members = channelLeft.getMembers();
             List<Member> copy = new ArrayList<>();
 
@@ -145,15 +142,36 @@ public class Listener extends ListenerAdapter {
             }
 
         }
-//        else if(event.getMember().getUser() == event.getGuild().getSelfMember().getUser()){
-//            if(event.getChannelLeft() != null && event.getChannelJoined() == null) {
-//                GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(event.getGuild());
-//
-//                musicManager.scheduler.isRepeating = false;
-//                musicManager.scheduler.queue.clear();
-//                musicManager.scheduler.player.stopTrack();
-//            }
-//        }
+        else if(event.getMember().getUser() == event.getGuild().getSelfMember().getUser()){
+            if(event.getChannelLeft() != null && event.getChannelJoined() != null) {
+                VoiceChannel channelJoined = event.getChannelJoined();
+
+                List<Member> members = channelJoined.getMembers();
+                List<Member> copy = new ArrayList<>();
+
+
+                boolean canClose = false;
+                for(Member member : members) {
+                    if(member.getUser() != event.getGuild().getSelfMember().getUser()) {
+                        copy.add(member);
+                    }
+                    else {
+                        canClose = true;
+                    }
+                }
+
+                if(copy.isEmpty() && canClose) {
+                    GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(event.getGuild());
+
+                    musicManager.scheduler.isRepeating = false;
+                    musicManager.scheduler.queue.clear();
+                    musicManager.scheduler.player.stopTrack();
+
+                    AudioManager audioManager = event.getGuild().getAudioManager();
+                    audioManager.closeAudioConnection();
+                }
+            }
+        }
     }
 
 
