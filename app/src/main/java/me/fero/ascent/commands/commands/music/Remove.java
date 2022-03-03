@@ -1,6 +1,8 @@
 package me.fero.ascent.commands.commands.music;
 
+import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.database.DatabaseManager;
@@ -13,10 +15,20 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
+import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class Remove implements ICommand {
+    private final EventWaiter waiter;
+
+    public Remove(EventWaiter waiter){
+        this.waiter = waiter;
+    }
     @Override
     public void handle(CommandContext ctx) {
         final TextChannel channel = ctx.getChannel();
@@ -29,74 +41,46 @@ public class Remove implements ICommand {
             return;
         }
 
-        List<String> args = ctx.getArgs();
-        if(args.isEmpty()) {
+        String s = UUID.randomUUID().toString();
 
-            channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Please specify a track index from the queue", null, null, null).build()).queue();
-            return;
+        SelectionMenu.Builder menu = SelectionMenu.create(s);
+        menu.setPlaceholder("Select a track here");
+        menu.setRequiredRange(1, 1);
+        for(AudioTrack track : queue) {
+            AudioTrackInfo info = track.getInfo();
+            menu.addOption(info.title, String.valueOf(queue.indexOf(track)), info.author);
         }
 
-        int index = -1;
+        channel.sendMessageEmbeds(Embeds.createBuilder(null, "Select a track that you want to remove", null, null, null).build()).setActionRow(menu.build()).queue((message) -> {
+            waiter.waitForEvent(
+                    SelectionMenuEvent.class,
+                    (e) -> {
+                        if(!(e.getChannel() == channel && e.getMember() != null && !e.getMember().getUser().isBot() && e.getComponentId().equals(s))) {
+                            return false;
+                        }
+                        if(e.getMember() != ctx.getMember()) {
+                            e.reply("This menu is not for you").setEphemeral(true).queue();
+                            return false;
+                        }
+                        return true;
+                    },
+                    (e) -> {
+                        int index = Integer.parseInt(e.getValues().get(0));
 
-        try {
-            index = Integer.parseInt(args.get(0));
-        } catch (NumberFormatException e) {
-            channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Please specify a track index from the queue", null, null, null).build()).queue();
-            return;
-        }
-
-        if(index <= 0) {
-            channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Please specify a track index from the queue", null, null, null).build()).queue();
-            return;
-        }
-
-        try {
-
-            if(DatabaseManager.INSTANCE.isUsingFairMode(guild.getIdLong())) {
-
-                Object userData = musicManager.scheduler.queue.get(index - 1).getUserData();
-                String ownerId = userData.toString();
-                long ownerIdLong = Long.parseLong(ownerId);
-
-                Member owner = null;
-                try {
-                    owner = guild.getMemberById(ownerIdLong);
-                } catch (Exception e )  {
-                    e.printStackTrace();
-                }
-
-                if(owner == null) {
-                    musicManager.scheduler.queue.remove(index - 1);
-
-                    channel.sendMessageEmbeds(Embeds.createBuilder(null, "Track removed successfully", null, null, null).build()).queue();
-                    return;
-                }
-
-                List<Member> members = ctx.getSelfMember().getVoiceState().getChannel().getMembers();
-                if(!members.contains(owner)) {
-                    musicManager.scheduler.queue.remove(index - 1);
-
-                    channel.sendMessageEmbeds(Embeds.createBuilder(null, "Track removed successfully", null, null, null).build()).queue();
-                    return;
-                }
-
-                if(ownerIdLong != ctx.getMember().getIdLong()) {
-                    EmbedBuilder builder = Embeds.createBuilder(null, "You did not added this song to the queue so you cannot remove the song", null, null, null);
-                    channel.sendMessageEmbeds(builder.build()).queue();
-                    return;
-                }
-            }
-
-            musicManager.scheduler.queue.remove(index - 1);
-        } catch (Exception e) {
-            if(e instanceof IndexOutOfBoundsException) {
-                channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Please specify a track index from the queue", null, null, null).build()).queue();
-            }
-            return;
-        }
-
-        channel.sendMessageEmbeds(Embeds.createBuilder(null, "Track removed successfully", null, null, null).build()).queue();
-
+                        message.delete().queue();
+                        try {
+                            queue.remove(index);
+                            channel.sendMessageEmbeds(Embeds.createBuilder(null, "Track removed successfully", null, null, null).build()).queue();
+                        } catch (Exception ex) {
+                            channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Error removing the track", null, null, null).build()).queue();
+                        }
+                    },
+                    10, TimeUnit.SECONDS,
+                    () -> {
+                        message.delete().queue();
+                    }
+            );
+        });
     }
     @Override
     public String getName() {
@@ -105,7 +89,7 @@ public class Remove implements ICommand {
 
     @Override
     public String getHelp() {
-        return "Removes specified track from queue (Will not remove current track)";
+        return "Removes specified track from queue";
     }
 
     @Override
@@ -114,12 +98,12 @@ public class Remove implements ICommand {
     }
 
     @Override
-    public String getUsage() {
-        return "remove <track_index>";
+    public List<String> getAliases() {
+        return List.of("rm");
     }
 
     @Override
-    public List<String> getAliases() {
-        return List.of("rm");
+    public boolean isDjNeeded() {
+        return true;
     }
 }

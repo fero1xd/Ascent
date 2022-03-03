@@ -55,4 +55,10 @@ public class Clear implements ICommand {
     public List<String> getAliases() {
         return List.of("cls");
     }
+
+    @Override
+    public boolean isDjNeeded() {
+        return true;
+    }
+
 }

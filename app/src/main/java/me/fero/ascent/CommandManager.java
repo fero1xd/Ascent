@@ -4,8 +4,10 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.commands.commands.*;
-import me.fero.ascent.commands.commands.moderation.*;
 import me.fero.ascent.commands.commands.music.*;
+import me.fero.ascent.utils.CooldownUtil;
+import me.fero.ascent.utils.Embeds;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import javax.annotation.Nullable;
@@ -23,7 +25,7 @@ public class CommandManager {
         addCommand(new Join());
         addCommand(new Play());
         addCommand(new Stop());
-        addCommand(new Skip());
+        addCommand(new Skip(waiter));
         addCommand(new NowPlaying());
         addCommand(new Pause());
         addCommand(new Resume());
@@ -36,17 +38,24 @@ public class CommandManager {
         addCommand(new Restart());
         addCommand(new ScPlay());
         addCommand(new Shuffle());
-        addCommand(new Remove());
+        addCommand(new Remove(waiter));
         addCommand(new Search(waiter));
         addCommand(new ChangePrefix());
         addCommand(new Invite());
         addCommand(new Profile());
         addCommand(new Move());
         addCommand(new DevInfo());
-        addCommand(new Lyrics());
+        addCommand(new ForceSkip());
+        addCommand(new Spotify(waiter));
+        addCommand(new Favourite());
+        addCommand(new RmDuplicates());
+        addCommand(new GetFav());
+        addCommand(new ClearFav());
+        addCommand(new LoadFav());
+        addCommand(new RemoveFav(waiter));
+//        addCommand(new Lyrics());
 
         addCommand(new Vote());
-        addCommand(new SetFairMode());
 
     }
 
@@ -89,6 +98,11 @@ public class CommandManager {
 
             event.getChannel().sendTyping().queue();
 
+            long l = CooldownUtil.checkCooldownForUser(event.getMember().getIdLong(), cmd);
+            if(l > 0) {
+                event.getChannel().sendMessageEmbeds(Embeds.createBuilder("Cool down error!", "Please wait " + l + " seconds before using this command", null, null, null).build()).queue();
+                return;
+            }
 
             if(cmd.getType().equalsIgnoreCase("music")) {
                 MusicCommand.handleMusicCommands(ctx, cmd);

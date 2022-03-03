@@ -17,6 +17,11 @@ public interface ICommand {
     default String getType() {
         return "";
     }
-
+    default boolean isDjNeeded() {
+        return false;
+    }
+    default int cooldownInSeconds() {
+        return 0;
+    }
 
 }

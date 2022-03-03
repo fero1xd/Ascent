@@ -6,6 +6,7 @@ import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.interactions.components.Button;
 
 public class Ping implements ICommand {
     @Override

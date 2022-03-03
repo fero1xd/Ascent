@@ -7,11 +7,11 @@ import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.GuildVoiceState;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.managers.AudioManager;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class MusicCommand  {
     @SuppressWarnings("ConstantConditions")
@@ -28,6 +28,17 @@ public class MusicCommand  {
         if(!memberVoiceState.inVoiceChannel()) {
             channel.sendMessageEmbeds(Embeds.notConnectedToVcEmbed(member).build()).queue();
             return;
+        }
+
+        if(cmd.isDjNeeded()) {
+            Role dj = member.getRoles().stream().filter((role) -> role.getName().equalsIgnoreCase("DJ")).findFirst().orElse(null);
+            boolean canInteract = ctx.getGuild().getSelfMember().canInteract(member);
+            List<Member> collect = memberVoiceState.getChannel().getMembers().stream().filter((mem) -> !mem.getUser().isBot() && mem != member).collect(Collectors.toList());
+
+            if(dj==null && canInteract && !collect.isEmpty()) {
+                channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "You do not have the DJ Role in the server", null, null, null).build()).queue();
+                return;
+            }
         }
 
         AudioManager audioManager = ctx.getGuild().getAudioManager();
@@ -47,7 +58,11 @@ public class MusicCommand  {
                     ||
                     cmd.getName().equalsIgnoreCase("search")
                     ||
-                    cmd.getName().equalsIgnoreCase("scplay"))
+                    cmd.getName().equalsIgnoreCase("scplay")
+                    ||
+                    cmd.getName().equalsIgnoreCase("spotify")
+
+            )
             {
                 if(!selfMember.hasPermission(Permission.VOICE_CONNECT))
                 {

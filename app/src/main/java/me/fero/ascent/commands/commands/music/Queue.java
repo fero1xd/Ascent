@@ -44,7 +44,7 @@ public class Queue implements ICommand {
             final AudioTrack track = trackList.get(i);
             final AudioTrackInfo info = track.getInfo();
 
-            builder.appendDescription(i+1 + ". `" + info.title + " by " + info.author + "`"+ "\n");
+            builder.appendDescription(i+1 + ". `" + info.title + "" + " by " + info.author + "`" + "\n");
 
         }
 
@@ -52,8 +52,6 @@ public class Queue implements ICommand {
             builder.appendDescription("And `" + String.valueOf(trackList.size() - trackCount) +"` more...");
 
         }
-
-
 
         channel.sendMessageEmbeds(builder.build()).queue();
 

@@ -71,4 +71,9 @@ public class Search implements ICommand {
     public String getUsage() {
         return "search <track_name>";
     }
+
+    @Override
+    public int cooldownInSeconds() {
+        return 5;
+    }
 }

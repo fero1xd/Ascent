@@ -94,4 +94,9 @@ public class Seek implements ICommand {
     public String getUsage() {
         return "seek <time_stamp>";
     }
+
+    @Override
+    public int cooldownInSeconds() {
+        return 5;
+    }
 }

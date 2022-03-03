@@ -52,4 +52,9 @@ public class Stop implements ICommand {
     public String getType() {
         return "music";
     }
+
+    @Override
+    public boolean isDjNeeded() {
+        return true;
+    }
 }

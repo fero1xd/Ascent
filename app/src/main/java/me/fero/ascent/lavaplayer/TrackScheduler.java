@@ -1,17 +1,16 @@
 package me.fero.ascent.lavaplayer;
 
-import com.sedmelluq.discord.lavaplayer.filter.equalizer.EqualizerConfiguration;
-import com.sedmelluq.discord.lavaplayer.filter.equalizer.EqualizerFactory;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -20,7 +19,11 @@ public class TrackScheduler extends AudioEventAdapter {
 
     public List<AudioTrack> queue = new ArrayList<>();
     public boolean isRepeating = false;
-    public Guild currentGuild = null;
+    public Guild currentGuild;
+    public List<Member> votes = new ArrayList<>();
+    public List<Member> totalMembers = new ArrayList<>();
+    public Boolean votingGoingOn = false;
+    public int MAX_QUEUE_SIZE = 100;
 
 
     public TrackScheduler(AudioPlayer player, Guild guild) {
@@ -29,7 +32,9 @@ public class TrackScheduler extends AudioEventAdapter {
     }
 
     public void queue(AudioTrack track) {
-
+        if(this.queue.size() >= MAX_QUEUE_SIZE) {
+            return;
+        }
         if(!this.player.startTrack(track, true)) {
             this.queue.add(track);
         }
@@ -83,5 +88,27 @@ public class TrackScheduler extends AudioEventAdapter {
         exception.printStackTrace();
     }
 
+
+    public boolean removeDuplicates() {
+        if(queue.isEmpty() || queue.size() == 1) return false;
+
+        // [1, 2, 3, 4, 5] total -> 4 indexes
+
+        List<String> uniqueIdentifiers = new ArrayList<>();
+        List<AudioTrack> newQueue = new ArrayList<>();
+
+        for(AudioTrack track : queue) {
+            String identifier = track.getIdentifier();
+            if(!uniqueIdentifiers.contains(identifier)) {
+                uniqueIdentifiers.add(identifier);
+                newQueue.add(track);
+            }
+        }
+
+        boolean check = newQueue.size() != this.queue.size();
+
+        this.queue = newQueue;
+        return check;
+    }
 
 }

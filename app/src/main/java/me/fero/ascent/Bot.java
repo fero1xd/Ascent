@@ -20,6 +20,7 @@ import java.util.EnumSet;
 
 public class Bot {
     private Bot() throws LoginException {
+        System.setProperty("http.agent", "Chrome");
         SpotifyAudioSourceManager instance = SpotifyAudioSourceManager.INSTANCE;
         DatabaseManager instance1 = DatabaseManager.INSTANCE;
         RedisDataStore instance2 = RedisDataStore.getInstance();
@@ -35,7 +36,8 @@ public class Bot {
                 Config.get("TOKEN"),
                 GatewayIntent.GUILD_MEMBERS,
                 GatewayIntent.GUILD_MESSAGES,
-                GatewayIntent.GUILD_VOICE_STATES
+                GatewayIntent.GUILD_VOICE_STATES,
+                GatewayIntent.GUILD_MESSAGE_REACTIONS
                 );
 
         jda.disableCache(EnumSet.of(

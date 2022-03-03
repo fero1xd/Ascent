@@ -1,13 +1,15 @@
 package me.fero.ascent.commands.commands;
 
 import me.fero.ascent.CommandManager;
+import me.fero.ascent.Config;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
-import me.fero.ascent.database.DatabaseManager;
 import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.interactions.components.Button;
 
 import java.awt.*;
 import java.util.List;
@@ -23,6 +25,7 @@ public class Help implements ICommand {
     public void handle(CommandContext ctx) {
         List<String> args = ctx.getArgs();
         TextChannel channel = ctx.getChannel();
+        Member member = ctx.getMember();
 //        String prefix = VeryBadDesign.PREFIXES.get(ctx.getGuild().getIdLong());
         String prefix = RedisDataStore.getInstance().getPrefix(ctx.getGuild().getIdLong());
 
@@ -51,11 +54,12 @@ public class Help implements ICommand {
             builder1.addField("General 🧬", generalBuilder.toString(), false);
 //            builder1.addField("Moderator 📳", moderatorBuilder.toString(), false);
             builder1.addField("Music 📯", musicBuilder.toString(), false);
+            channel.sendMessageEmbeds(builder1.build()).setActionRow(
+                    Button.link("https://discord.gg/Z42RjgxQ", "Join the support server"),
+                    Button.link(Config.get("vote_url"), "Vote for me"),
+                    Button.link(Config.get("invite_url"), "Invite me")
+            ).queue();
 
-            boolean isUsingFairMode = DatabaseManager.INSTANCE.isUsingFairMode(ctx.getGuild().getIdLong());
-
-            builder1.setFooter("Fair mode is " + (isUsingFairMode ? "On" : "Off"));
-            channel.sendMessageEmbeds(builder1.build()).queue();
 
             return;
         }

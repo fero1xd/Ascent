@@ -12,16 +12,21 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import me.duncte123.botcommons.messaging.EmbedUtils;
 import me.fero.ascent.Listener;
 import me.fero.ascent.commands.CommandContext;
+import me.fero.ascent.database.DatabaseManager;
+import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.spotify.SpotifyAudioSourceManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
+import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.components.Button;
+import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class PlayerManager {
@@ -55,6 +60,10 @@ public class PlayerManager {
         TextChannel channel = ctx.getChannel();
         GuildMusicManager musicManager = this.getMusicManager(channel.getGuild());
 
+        if(musicManager.scheduler.queue.size() >= musicManager.scheduler.MAX_QUEUE_SIZE) {
+            channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Max queue size reached", null, null, null).build()).queue();
+            return;
+        }
         if(SpotifyAudioSourceManager.INSTANCE.loadItem(ctx, query)) {
             return;
         }
@@ -71,8 +80,6 @@ public class PlayerManager {
             public void playlistLoaded(AudioPlaylist playlist) {
                 final List<AudioTrack> tracks = playlist.getTracks();
 
-
-
                 // User Loaded playlist
                 if(!playlist.isSearchResult()) {
                     EmbedBuilder builder = EmbedUtils.getDefaultEmbed();
@@ -81,8 +88,12 @@ public class PlayerManager {
                     String description = "[" + playlist.getName() + "]" + "(" + query + ")";
                     builder.setDescription(description);
 
+
                     channel.sendMessageEmbeds(builder.build())
                             .queue();
+
+
+
                     for(AudioTrack track : tracks) {
                         track.setUserData(ctx.getAuthor().getIdLong());
                         musicManager.scheduler.queue(track);
@@ -94,70 +105,44 @@ public class PlayerManager {
                 // Search feature
                 if(tracks.size() > 1 && isSearchCmd && waiter != null) {
                     EmbedBuilder builder = EmbedUtils.getDefaultEmbed();
-                    builder.setTitle("Select a track track");
-                    builder.setFooter("Requested by " + ctx.getMember().getEffectiveName(), ctx.getMember().getEffectiveAvatarUrl());
+                    builder.setDescription("Select a track. You have 15 seconds");
 
-                    final int trackCount = Math.min(tracks.size(), 10);
+                    final int trackCount = Math.min(tracks.size(), 20);
+                    String s = UUID.randomUUID().toString();
+                    SelectionMenu.Builder menu = SelectionMenu.create(s);
+                    menu.setPlaceholder("Select your track here");
+                    menu.setRequiredRange(1, 1);
 
                     for (int i = 0; i <  trackCount; i++) {
                         final AudioTrack track = tracks.get(i);
                         final AudioTrackInfo info = track.getInfo();
-
-                        builder.appendDescription(i+1 + ". `" + info.title + " by " + info.author + "`"+ "\n");
+                        menu.addOption(info.title, String.valueOf(tracks.indexOf(track)), info.author);
                     }
-                    channel.sendMessageEmbeds(builder.build()).queue((message -> {
+                    channel.sendMessageEmbeds(builder.build()).setActionRow(menu.build()).queue((message -> {
                         waiter.waitForEvent(
-                                GuildMessageReceivedEvent.class,
-                                (e) -> e.getChannel() == channel &&  e.getMember() == ctx.getMember() && !e.getAuthor().isBot(),
+                                SelectionMenuEvent.class,
                                 (e) -> {
-                                    String inputRaw = e.getMessage().getContentRaw();
-
-                                    int input = -1;
-                                    try {
-                                        input = Integer.parseInt(inputRaw);
-
-                                    } catch (NumberFormatException ex) {
-                                        message.delete().queue();
-                                        e.getMessage().delete().queue();
-                                        return;
+                                    if(!(e.getChannel() == channel && e.getMember() != null && !e.getMember().getUser().isBot() && e.getComponentId().equals(s))) {
+                                        return false;
                                     }
-
-                                    if(input <= 0 || input > trackCount) {
-                                        message.delete().queue();
-                                        e.getMessage().delete().queue();
-                                        final AudioTrack track = tracks.get(0);
-                                        channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
-
-                                        track.setUserData(ctx.getAuthor().getIdLong());
-                                        musicManager.scheduler.queue(track);
-                                        return;
+                                    if(e.getMember() != ctx.getMember()) {
+                                        e.reply("This menu is not for you").setEphemeral(true).queue();
+                                        return false;
                                     }
-
-                                    AudioTrack track = null;
-                                    try {
-                                        track = tracks.get(input - 1);
-                                    }catch (IndexOutOfBoundsException exc) {
-                                        final AudioTrack trackx = tracks.get(0);
+                                    return true;
+                                },
+                                (e) -> {
+                                    int index = Integer.parseInt(e.getValues().get(0));
+                                    AudioTrack audioTrack = tracks.get(index);
+                                    if(audioTrack!=null) {
                                         message.delete().queue();
-                                        e.getMessage().delete().queue();
-                                        channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), trackx).build()).queue();
-                                        trackx.setUserData(ctx.getAuthor().getIdLong());
-
-                                        musicManager.scheduler.queue(trackx);
-                                        return;
-                                    }
-
-                                    if(track != null) {
-                                        message.delete().queue();
-                                        e.getMessage().delete().queue();
-                                        channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
-                                        track.setUserData(ctx.getAuthor().getIdLong());
-
-                                        musicManager.scheduler.queue(track);
+                                        channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), audioTrack).build()).queue();
+                                        audioTrack.setUserData(ctx.getAuthor().getIdLong());
+                                        musicManager.scheduler.queue(audioTrack);
                                     }
 
                                 },
-                                15L, TimeUnit.SECONDS,
+                                15, TimeUnit.SECONDS,
                                 () -> {
                                     message.delete().queue();
                                     final AudioTrack track = tracks.get(0);
@@ -167,14 +152,10 @@ public class PlayerManager {
 
                                     musicManager.scheduler.queue(track);
                                 }
-
                         );
                     }));
-
                     return;
-
                 }
-
 
                 final AudioTrack track = tracks.get(0);
                 channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
@@ -200,38 +181,6 @@ public class PlayerManager {
             }
         });
     }
-
-
-//    public void queueMultipleUrl(CommandContext ctx, List<String> urls) {
-//        TextChannel channel = ctx.getChannel();
-//        GuildMusicManager musicManager = this.getMusicManager(channel.getGuild());
-//
-//        for(String url : urls) {
-//            this.audioPlayerManager.loadItemOrdered(musicManager, url, new AudioLoadResultHandler() {
-//                @Override
-//                public void trackLoaded(AudioTrack track) {
-//                    track.setUserData(ctx.getAuthor().getIdLong());
-//                    musicManager.scheduler.queue(track);
-//                }
-//
-//                @Override
-//                public void playlistLoaded(AudioPlaylist playlist) {
-//
-//                }
-//
-//                @Override
-//                public void noMatches() {
-//
-//                }
-//
-//                @Override
-//                public void loadFailed(FriendlyException exception) {
-//
-//                }
-//            });
-//
-//        }
-//    }
 
     public static PlayerManager getInstance() {
         if(instance == null) {

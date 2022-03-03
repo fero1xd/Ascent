@@ -1,2 +1,1 @@
-1. Add mongodb
-2. Add auto leave after some time of inactivity
+1

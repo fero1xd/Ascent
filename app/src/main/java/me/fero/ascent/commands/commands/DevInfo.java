@@ -6,6 +6,7 @@ import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.interactions.components.Button;
 
 import java.awt.*;
 import java.util.List;
@@ -19,9 +20,10 @@ public class DevInfo implements ICommand {
         builder.addField("Name:", Config.get("dev_name"), true);
         builder.addField("ID:", Config.get("owner_id"), true);
         builder.setThumbnail(ctx.getSelfMember().getEffectiveAvatarUrl());
-        builder.addField("Github:", "[Click me!](" + Config.get("github_url") + ")", true);
 
-        channel.sendMessageEmbeds(builder.build()).queue();
+        channel.sendMessageEmbeds(builder.build()).setActionRow(
+                Button.link(Config.get("github_url"), "Github")
+        ).queue();
     }
 
     @Override

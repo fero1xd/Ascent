@@ -1,6 +1,7 @@
 package me.fero.ascent.commands.commands;
 
 import me.duncte123.botcommons.messaging.EmbedUtils;
+import me.fero.ascent.Config;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.utils.Embeds;
@@ -12,16 +13,16 @@ import net.dv8tion.jda.api.interactions.components.Button;
 public class Invite implements ICommand {
     @Override
     public void handle(CommandContext ctx) {
-        String invite =  ctx.getJDA().getInviteUrl(Permission.ADMINISTRATOR);
+        String invite = Config.get("invite_url");
 
-        EmbedBuilder builder = Embeds.createBuilder("Invite me!", "Give this link to your friends 🤞",
-                        "Requested by " + ctx.getMember().getEffectiveName(),
-                        ctx.getMember().getEffectiveAvatarUrl(),
+        EmbedBuilder builder = Embeds.createBuilder("Invite me!", null,
+                        null,
+                       null,
                         null);
-        builder.addField("Link", invite, false);
-        builder.setThumbnail(ctx.getSelfMember().getEffectiveAvatarUrl());
 
-        ctx.getChannel().sendMessageEmbeds(builder.build()).queue();
+        ctx.getChannel().sendMessageEmbeds(builder.build()).setActionRow(
+                Button.link(invite, "Invite")
+        ).queue();
 
     }
 

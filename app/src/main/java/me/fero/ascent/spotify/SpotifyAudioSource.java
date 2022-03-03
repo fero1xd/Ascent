@@ -1,15 +1,22 @@
 package me.fero.ascent.spotify;
 
+import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
+import me.duncte123.botcommons.messaging.EmbedUtils;
 import me.fero.ascent.Config;
 import me.fero.ascent.Listener;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.lavaplayer.GuildMusicManager;
 import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.utils.Embeds;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
+import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu;
 import org.apache.hc.core5.http.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +31,7 @@ import se.michaelthelin.spotify.requests.data.tracks.GetTrackRequest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,6 +88,7 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
     }
 
     public void getTrack(CommandContext ctx, String url) {
+
         final Matcher res = SPOTIFY_TRACK_REGEX.matcher(url);
         if(!res.matches()) {
             return;
@@ -87,6 +96,7 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
         try {
             GetTrackRequest request = this.spi.getTrack(res.group(res.groupCount())).build();
             Track track = request.execute();
+
 
             LOGGER.info("Name: "+ track.getName());
             LOGGER.info("Artist: " + track.getArtists()[0].getName());
@@ -113,7 +123,10 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                     AudioTrack audioTrack = playlist.getTracks().get(0);
                     audioTrack.setUserData(ctx.getAuthor().getIdLong());
 
-                    ctx.getChannel().sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), audioTrack).build()).queue();
+
+
+
+                    ctx.getChannel().sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), audioTrack).setDescription("[" + audioTrack.getInfo().title + " - " + audioTrack.getInfo().author + "]" + "(" + track.getExternalUrls().get("spotify") + ")").build()).queue();
                     musicManager.scheduler.queue(audioTrack);
                 }
 
@@ -139,6 +152,8 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
             return;
         }
         try {
+            GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
+
             final Playlist spotifyPlaylist = this.spi.getPlaylist(res.group(res.groupCount())).build().execute();
 
             List<PlaylistTrack> playlistTracks = List.of(spotifyPlaylist.getTracks().getItems());
@@ -148,8 +163,8 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
             final int originalSize = playlistTracks.size();
 
-            if(originalSize > 100){
-                playlistTracks = playlistTracks.subList(0, 100);
+            if(originalSize > musicManager.scheduler.MAX_QUEUE_SIZE){
+                playlistTracks = playlistTracks.subList(0, musicManager.scheduler.MAX_QUEUE_SIZE);
             }
 
             final List<Track> finalPlaylist = new ArrayList<>();
@@ -168,7 +183,6 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
             ctx.getChannel().sendMessageEmbeds(Embeds.createBuilder(null, "Spotify Playlist Loaded : Adding " + finalPlaylist.size() + " Tracks to the queue", null, null, null).build()).queue();
             for(Track track : finalPlaylist) {
-                GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
                 final String query = "ytsearch:" + track.getName() + " " + track.getArtists()[0].getName();
                 PlayerManager.getInstance().audioPlayerManager.loadItemOrdered(musicManager, query, new AudioLoadResultHandler() {
                     @Override
@@ -258,6 +272,95 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
         }
         catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Override
+    public void searchTrack(CommandContext ctx, String query, EventWaiter waiter) {
+        try {
+            TextChannel channel = ctx.getChannel();
+            Paging<Track> execute = this.spi.searchTracks(query).build().execute();
+
+            Track[] items = execute.getItems();
+
+            if(items[0] == null) {
+                ctx.getChannel().sendMessageEmbeds(Embeds.createBuilder(null, "Couldn't find anything on spotify", null, null, null).build()).queue();
+                return;
+            }
+
+            EmbedBuilder builder = EmbedUtils.getDefaultEmbed();
+            builder.setDescription("Select a track. You have 15 seconds");
+            final int trackCount = Math.min(items.length, 20);
+            String s = UUID.randomUUID().toString();
+            SelectionMenu.Builder menu = SelectionMenu.create(s);
+            menu.setPlaceholder("Select your track here");
+            menu.setRequiredRange(1, 1);
+
+            for (int i = 0; i <  trackCount; i++) {
+                final Track track = items[i];
+                menu.addOption(track.getName(), track.getName() + " " + track.getArtists()[0].getName() + " index " + i, track.getArtists()[0].getName());
+            }
+            GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
+            channel.sendMessageEmbeds(builder.build()).setActionRow(menu.build()).queue((message) -> {
+                        waiter.waitForEvent(
+                                SelectionMenuEvent.class,
+                                (e) -> {
+                                    if(!(e.getChannel() == channel && e.getMember() != null && !e.getMember().getUser().isBot() && e.getComponentId().equals(s))) {
+                                        return false;
+                                    }
+                                    if(e.getMember() != ctx.getMember()) {
+                                        e.reply("This menu is not for you").setEphemeral(true).queue();
+                                        return false;
+                                    }
+                                    return true;
+                                },
+                                (e) -> {
+                                    String q = e.getValues().get(0);
+                                    q = q.substring(0, q.indexOf("index")).trim();
+                                    final String sQuery = "ytsearch:" + q;
+
+
+                                    PlayerManager.getInstance().audioPlayerManager.loadItemOrdered(musicManager, sQuery, new AudioLoadResultHandler() {
+                                        @Override
+                                        public void trackLoaded(AudioTrack track) {
+
+                                        }
+
+                                        @Override
+                                        public void playlistLoaded(AudioPlaylist playlist) {
+                                            List<AudioTrack> tracks = playlist.getTracks();
+                                            if(tracks.isEmpty()) return;
+
+                                            AudioTrack audioTrack = tracks.get(0);
+                                            message.delete().queue();
+                                            channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), audioTrack).build()).queue();
+                                            audioTrack.setUserData(ctx.getAuthor().getIdLong());
+                                            musicManager.scheduler.queue(audioTrack);
+                                        }
+
+                                        @Override
+                                        public void noMatches() {
+
+                                        }
+
+                                        @Override
+                                        public void loadFailed(FriendlyException exception) {
+
+                                        }
+                                    });
+                            },
+                    15, TimeUnit.SECONDS,
+                    () -> {
+                        message.delete().queue();
+                    }
+                );
+            });
+
+
+
+        }catch (Exception e) {
             e.printStackTrace();
         }
     }
