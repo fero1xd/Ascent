@@ -28,7 +28,7 @@ public class MongoDbDataSource implements DatabaseManager{
 
     public MongoDbDataSource() {
         MongoClient client = MongoClients.create(Config.get("MONGO_URI"));
-        this.db = client.getDatabase("ascent_bot");
+        this.db = client.getDatabase("fero_bot");
         LOGGER.info("Connected to Mongo DB");
     }
 

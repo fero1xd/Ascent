@@ -49,7 +49,7 @@ public class Skip implements ICommand {
             return;
         }
 
-        List<Member> filteredMembers = vc.getMembers().stream().filter(member -> member != ctx.getSelfMember()).collect(Collectors.toList());
+        List<Member> filteredMembers = vc.getMembers().stream().filter(member -> !member.getUser().isBot()).collect(Collectors.toList());
         if(filteredMembers.size() >= 3) {
             musicManager.scheduler.votingGoingOn = true;
             musicManager.scheduler.votes.clear();

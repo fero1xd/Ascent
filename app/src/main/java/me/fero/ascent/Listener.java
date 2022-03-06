@@ -1,22 +1,17 @@
 package me.fero.ascent;
 
-import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.lavaplayer.GuildMusicManager;
 import me.fero.ascent.lavaplayer.PlayerManager;
-import me.fero.ascent.lavaplayer.TrackScheduler;
 import me.fero.ascent.utils.Embeds;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.managers.AudioManager;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -44,8 +39,8 @@ public class Listener extends ListenerAdapter {
         this.jda.getPresence().setActivity(Activity.listening("help in " + event.getGuildTotalCount() + " Guilds"));
     }
 
-    public Listener(EventWaiter waiter, RedisDataStore redis) {
-        this.manager = new CommandManager(waiter);
+    public Listener(RedisDataStore redis) {
+        this.manager = new CommandManager();
         this.redis = redis;
     }
 
@@ -57,9 +52,8 @@ public class Listener extends ListenerAdapter {
         if(defaultChannel !=null) {
             defaultChannel.sendMessageEmbeds(Embeds.introEmbed(event.getGuild().getSelfMember(), redis.getPrefix(event.getGuild().getIdLong())).build()).queue();
         }
-
-        LOGGER.info("Joined " + event.getGuild().getName() + " guild Adding the music manager");
         PlayerManager.getInstance().getMusicManager(event.getGuild());
+        LOGGER.info("Joined " + event.getGuild().getName() + " guild Adding the music manager");
         this.jda.getPresence().setActivity(Activity.listening("help in " + event.getJDA().getGuilds().size() + " Guilds"));
     }
 
@@ -79,8 +73,9 @@ public class Listener extends ListenerAdapter {
             audioManager.closeAudioConnection();
         }
 
+        PlayerManager.getInstance().getMusicManager(event.getGuild());
+
         LOGGER.info("Left " + event.getGuild().getName() + " guild Deleting the music manager");
-        PlayerManager.getInstance().removeGuildMusicManager(event.getGuild());
     }
 
     @Override
@@ -111,6 +106,8 @@ public class Listener extends ListenerAdapter {
             manager.handle(event, prefix);
         }
     }
+
+
 
     @Override
     public void onGuildVoiceUpdate(@NotNull GuildVoiceUpdateEvent event) {
@@ -153,6 +150,7 @@ public class Listener extends ListenerAdapter {
 
                 AudioManager audioManager = event.getGuild().getAudioManager();
                 audioManager.closeAudioConnection();
+
             }
 
         }

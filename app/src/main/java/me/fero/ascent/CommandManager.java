@@ -7,7 +7,7 @@ import me.fero.ascent.commands.commands.*;
 import me.fero.ascent.commands.commands.music.*;
 import me.fero.ascent.utils.CooldownUtil;
 import me.fero.ascent.utils.Embeds;
-import net.dv8tion.jda.api.entities.Role;
+import me.fero.ascent.utils.Waiter;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import javax.annotation.Nullable;
@@ -19,13 +19,13 @@ import java.util.regex.Pattern;
 public class CommandManager {
     private final List<ICommand> commands = new ArrayList<>();
 
-    public CommandManager(EventWaiter waiter) {
+    public CommandManager() {
         addCommand(new Ping());
         addCommand(new Help(this));
         addCommand(new Join());
         addCommand(new Play());
         addCommand(new Stop());
-        addCommand(new Skip(waiter));
+        addCommand(new Skip(Waiter.getInstance().waiter));
         addCommand(new NowPlaying());
         addCommand(new Pause());
         addCommand(new Resume());
@@ -38,21 +38,21 @@ public class CommandManager {
         addCommand(new Restart());
         addCommand(new ScPlay());
         addCommand(new Shuffle());
-        addCommand(new Remove(waiter));
-        addCommand(new Search(waiter));
+        addCommand(new Remove(Waiter.getInstance().waiter));
+        addCommand(new Search(Waiter.getInstance().waiter));
         addCommand(new ChangePrefix());
         addCommand(new Invite());
         addCommand(new Profile());
         addCommand(new Move());
         addCommand(new DevInfo());
         addCommand(new ForceSkip());
-        addCommand(new Spotify(waiter));
+        addCommand(new Spotify(Waiter.getInstance().waiter));
         addCommand(new Favourite());
         addCommand(new RmDuplicates());
         addCommand(new GetFav());
         addCommand(new ClearFav());
         addCommand(new LoadFav());
-        addCommand(new RemoveFav(waiter));
+        addCommand(new RemoveFav(Waiter.getInstance().waiter));
 //        addCommand(new Lyrics());
 
         addCommand(new Vote());

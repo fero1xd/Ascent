@@ -10,6 +10,7 @@ import me.duncte123.botcommons.messaging.EmbedUtils;
 import me.fero.ascent.database.DatabaseManager;
 import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.spotify.SpotifyAudioSourceManager;
+import me.fero.ascent.utils.Waiter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -31,7 +32,6 @@ public class Bot {
                         .setColor(0x3883d9)
         );
 
-        EventWaiter waiter = new EventWaiter();
         JDABuilder jda =  JDABuilder.createDefault(
                 Config.get("TOKEN"),
                 GatewayIntent.GUILD_MEMBERS,
@@ -47,10 +47,10 @@ public class Bot {
         ));
         jda.enableCache(CacheFlag.VOICE_STATE);
 
-        jda.addEventListeners(new Listener(waiter, instance2), waiter);
+        jda.addEventListeners(new Listener(instance2), Waiter.instance.waiter);
         jda.build();
-        YoutubeHttpContextFilter.setPAPISID("gDIJZ27nqmM12kCm/Av7wzMjg-Dq5IMMG9");
-        YoutubeHttpContextFilter.setPSID("GQjIL_RrduWKPps0jSZ8-hK4yj5Ua6zOkS0PPVmUKel3t-HKPM3NnFnpeo7VCMjro-W0hA.");
+        YoutubeHttpContextFilter.setPAPISID(Config.get("papisid"));
+        YoutubeHttpContextFilter.setPSID(Config.get("psid"));
 
     }
 

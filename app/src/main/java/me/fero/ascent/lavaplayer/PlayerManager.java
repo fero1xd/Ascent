@@ -12,18 +12,12 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import me.duncte123.botcommons.messaging.EmbedUtils;
 import me.fero.ascent.Listener;
 import me.fero.ascent.commands.CommandContext;
-import me.fero.ascent.database.DatabaseManager;
-import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.spotify.SpotifyAudioSourceManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu;
 
 import java.util.*;
@@ -49,10 +43,6 @@ public class PlayerManager {
            guild.getAudioManager().setSendingHandler(guildMusicManager.getSendHandler());
            return guildMusicManager;
         });
-    }
-
-    public void removeGuildMusicManager(Guild guild) {
-        this.musicManagers.remove(guild.getIdLong());
     }
 
     public void loadAndPlay(CommandContext ctx, String query, boolean isSearchCmd, EventWaiter waiter) {
@@ -98,7 +88,6 @@ public class PlayerManager {
                         track.setUserData(ctx.getAuthor().getIdLong());
                         musicManager.scheduler.queue(track);
                     }
-
                     return;
                 }
 
