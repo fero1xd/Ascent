@@ -53,6 +53,8 @@ public class CommandManager {
         addCommand(new ClearFav());
         addCommand(new LoadFav());
         addCommand(new RemoveFav(Waiter.getInstance().waiter));
+        addCommand(new Quote());
+        addCommand(new Banner());
 //        addCommand(new Lyrics());
 
         addCommand(new Vote());

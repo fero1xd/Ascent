@@ -12,6 +12,8 @@ import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.managers.AudioManager;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -28,7 +30,6 @@ public class Listener extends ListenerAdapter {
     private JDA jda;
     private final RedisDataStore redis;
 
-
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
         LOGGER.info("{} is ready", event.getJDA().getSelfUser().getAsTag());
@@ -37,7 +38,14 @@ public class Listener extends ListenerAdapter {
 
         this.jda = event.getJDA();
         this.jda.getPresence().setActivity(Activity.listening("help in " + event.getGuildTotalCount() + " Guilds"));
+
+//        long guildId = 854330456207654933L;
+//        this.jda.getGuildById(guildId).updateCommands().addCommands(
+//                        new CommandData("play", "Plays a song from youtube")
+//                        .addOption(OptionType.STRING, "query", "Link or search query", true)
+//        ).queue();
     }
+
 
     public Listener(RedisDataStore redis) {
         this.manager = new CommandManager();

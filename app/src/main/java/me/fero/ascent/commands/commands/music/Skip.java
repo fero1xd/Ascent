@@ -49,6 +49,7 @@ public class Skip implements ICommand {
             return;
         }
 
+
         List<Member> filteredMembers = vc.getMembers().stream().filter(member -> !member.getUser().isBot()).collect(Collectors.toList());
         if(filteredMembers.size() >= 3) {
             musicManager.scheduler.votingGoingOn = true;
@@ -62,12 +63,11 @@ public class Skip implements ICommand {
                     "Requested by " +
                             ctx.getMember().getEffectiveName(), ctx.getMember().getEffectiveAvatarUrl(),
                     null).build()).queue((message) -> {
-
                         message.addReaction(unicode).queue();
                         this.waiter.waitForEvent(
                                 GuildMessageReactionAddEvent.class,
                                 (e) -> {
-                                    if(e.getMember().getUser().isBot() || !e.getReactionEmote().getEmoji().equalsIgnoreCase("👍")) return false;
+                                    if(e.getMember().getUser().isBot() || !e.getReactionEmote().getEmoji().equalsIgnoreCase("👍") || !e.getMessageId().equals(message.getId())) return false;
                                     if (!e.getGuild().getSelfMember().getVoiceState().inVoiceChannel()) {
                                         message.removeReaction(unicode).queue();
                                         return false;
@@ -134,7 +134,7 @@ public class Skip implements ICommand {
                         this.waiter.waitForEvent(
                                 GuildMessageReactionRemoveEvent.class,
                                 (e) -> {
-                                    if(e.getMember().getUser().isBot() || !e.getReactionEmote().getEmoji().equalsIgnoreCase("👍")) return false;
+                                    if(e.getMember().getUser().isBot() || !e.getReactionEmote().getEmoji().equalsIgnoreCase("👍") || !e.getMessageId().equals(message.getId())) return false;
                                     if (!e.getGuild().getSelfMember().getVoiceState().inVoiceChannel()) {
                                         return false;
                                     }
