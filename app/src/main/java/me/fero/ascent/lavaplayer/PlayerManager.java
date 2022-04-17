@@ -45,6 +45,10 @@ public class PlayerManager {
         });
     }
 
+    public void removeGuildMusicManager(Guild guild) {
+        this.musicManagers.remove(guild.getIdLong());
+    }
+
     public void loadAndPlay(CommandContext ctx, String query, boolean isSearchCmd, EventWaiter waiter) {
 
         TextChannel channel = ctx.getChannel();

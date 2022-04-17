@@ -77,11 +77,16 @@ public class Listener extends ListenerAdapter {
             musicManager.scheduler.queue.clear();
             musicManager.scheduler.player.stopTrack();
 
+            // **RESET EVERYTHING**
+            musicManager.scheduler.totalMembers.clear();
+            musicManager.scheduler.votes.clear();
+            musicManager.scheduler.votingGoingOn = false;
+
             AudioManager audioManager = event.getGuild().getAudioManager();
             audioManager.closeAudioConnection();
         }
 
-        PlayerManager.getInstance().getMusicManager(event.getGuild());
+        PlayerManager.getInstance().removeGuildMusicManager(event.getGuild());
 
         LOGGER.info("Left " + event.getGuild().getName() + " guild Deleting the music manager");
     }
