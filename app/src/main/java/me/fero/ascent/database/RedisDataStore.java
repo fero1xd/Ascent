@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class RedisDataStore {
     private static RedisDataStore instance;
@@ -35,7 +36,7 @@ public class RedisDataStore {
 
         if(guildModel == null) {
             String prefix1 = DatabaseManager.INSTANCE.getPrefix(idLong);
-            GuildModel model = new GuildModel(idLong, prefix1, new ArrayList<>());
+            GuildModel model = new GuildModel(idLong, prefix1, new ArrayList<>(), null);
             bucket.set(model);
             return prefix1;
         }
@@ -102,6 +103,34 @@ public class RedisDataStore {
         RBucket<GuildModel> bucket = this.redisson.getBucket(String.valueOf(guildId));
         GuildModel guildModel = bucket.get();
         guildModel.removeFavourite(userId, trackId);
+        bucket.set(guildModel);
+    }
+
+    public HashSet<String> getIgnoredChannels(Long guildId) {
+        RBucket<GuildModel> bucket = this.redisson.getBucket(String.valueOf(guildId));
+        GuildModel guildModel = bucket.get();
+
+        if(guildModel.getIgnoredChannelsIds() == null) {
+            HashSet<String> ignoredChannels = DatabaseManager.INSTANCE.getIgnoredChannels(guildId);
+            guildModel.setIgnoredChannelsIds(ignoredChannels);
+            bucket.set(guildModel);
+            return ignoredChannels;
+        }
+
+        return guildModel.getIgnoredChannelsIds();
+    }
+
+    public void ignoreChannel(Long guildId, String key) {
+        RBucket<GuildModel> bucket = this.redisson.getBucket(String.valueOf(guildId));
+        GuildModel guildModel = bucket.get();
+        guildModel.ignoreChannel(key);
+        bucket.set(guildModel);
+    }
+
+    public void unIgnoreChannel(Long guildId, String key) {
+        RBucket<GuildModel> bucket = this.redisson.getBucket(String.valueOf(guildId));
+        GuildModel guildModel = bucket.get();
+        guildModel.unIgnoreChannel(key);
         bucket.set(guildModel);
     }
 

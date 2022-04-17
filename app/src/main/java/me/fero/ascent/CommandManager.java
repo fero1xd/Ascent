@@ -5,6 +5,7 @@ import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.commands.commands.*;
 import me.fero.ascent.commands.commands.music.*;
+import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.utils.CooldownUtil;
 import me.fero.ascent.utils.Embeds;
 import me.fero.ascent.utils.Waiter;
@@ -13,6 +14,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -56,6 +58,7 @@ public class CommandManager {
         addCommand(new Quote());
         addCommand(new Banner());
 //        addCommand(new Lyrics());
+        addCommand(new Ignore());
 
         addCommand(new Vote());
 
@@ -100,6 +103,12 @@ public class CommandManager {
 
             event.getChannel().sendTyping().queue();
 
+
+            // Check for ignored Channels
+            HashSet<String> ignoredChannels = RedisDataStore.getInstance().getIgnoredChannels(ctx.getGuild().getIdLong());
+            if(ignoredChannels.contains(event.getChannel().getId()) && !cmd.getName().equalsIgnoreCase("ignore")) return;
+
+            // Check for cool down
             long l = CooldownUtil.checkCooldownForUser(event.getMember().getIdLong(), cmd);
             if(l > 0) {
                 event.getChannel().sendMessageEmbeds(Embeds.createBuilder("Cool down error!", "Please wait " + l + " seconds before using this command", null, null, null).build()).queue();
@@ -113,6 +122,8 @@ public class CommandManager {
             cmd.handle(ctx);
         }
     }
+
+
 
 
 }

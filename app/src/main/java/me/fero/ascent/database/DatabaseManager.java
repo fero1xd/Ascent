@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.Guild;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 public interface DatabaseManager {
@@ -17,5 +18,7 @@ public interface DatabaseManager {
     ArrayList<HashMap<String, String>> getFavourites(long guildId, long userId);
     void clearFavourites(long guildId, long userId);
     void removeFavourite(long guildId, long userId, String trackId);
-
+    HashSet<String> getIgnoredChannels(long guildId);
+    void ignoreChannel(long guildId, String key);
+    void unIgnoreChannel(long guildId, String key);
 }

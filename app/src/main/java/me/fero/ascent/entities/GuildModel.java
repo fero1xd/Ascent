@@ -4,20 +4,22 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class GuildModel implements Serializable {
     private final Long guildId;
     private String prefix;
+    private final ArrayList<HashMap<Long, ArrayList<HashMap<String, String>>>> favourites;
+    private HashSet<String> ignoredChannelsId;
 
-    private ArrayList<HashMap<Long, ArrayList<HashMap<String, String>>>> favourites;
 
-
-    public GuildModel(Long guildId, String prefix, ArrayList<HashMap<Long, ArrayList<HashMap<String, String>>>> favourites) {
+    public GuildModel(Long guildId, String prefix, ArrayList<HashMap<Long, ArrayList<HashMap<String, String>>>> favourites, HashSet<String> ignoredChannelsId) {
         this.guildId = guildId;
         this.prefix = prefix;
         this.favourites = favourites;
+        this.ignoredChannelsId = ignoredChannelsId;
     }
 
     public String getPrefix(){
@@ -78,4 +80,14 @@ public class GuildModel implements Serializable {
         }
     }
 
+    public HashSet<String> getIgnoredChannelsIds() { return this.ignoredChannelsId; }
+
+    public void ignoreChannel(String key) {
+        this.ignoredChannelsId.add(key);
+    }
+    public void unIgnoreChannel(String key) {
+        this.ignoredChannelsId.remove(key);
+    }
+
+    public void setIgnoredChannelsIds(HashSet<String> set) { this.ignoredChannelsId = set; }
 }

@@ -28,7 +28,7 @@ public class MongoDbDataSource implements DatabaseManager{
 
     public MongoDbDataSource() {
         MongoClient client = MongoClients.create(Config.get("MONGO_URI"));
-        this.db = client.getDatabase("fero_bot");
+        this.db = client.getDatabase("ascent_bot");
         LOGGER.info("Connected to Mongo DB");
     }
 
@@ -217,5 +217,62 @@ public class MongoDbDataSource implements DatabaseManager{
             }
         }
 
+    }
+
+    @Override
+    public HashSet<String> getIgnoredChannels(long guildId) {
+        BasicDBObject whereQuery = new BasicDBObject();
+        whereQuery.put("_id", guildId);
+        MongoCollection<Document> guild_settings = this.db.getCollection("guild_settings");
+        Document cursor = guild_settings.find(whereQuery).first();
+
+
+        if(cursor.get("ignored_channels") == null) {
+            Bson filter = Filters.eq("_id", guildId);
+            Bson updated = Updates.set("ignored_channels", new BasicDBList());
+            guild_settings.updateOne(filter, updated);
+            return new HashSet<>();
+        }
+
+        List<String> igChannels = (List<String>) cursor.get("ignored_channels");
+
+        return new HashSet<>(igChannels);
+    }
+
+    @Override
+    public void ignoreChannel(long guildId, String key) {
+        BasicDBObject whereQuery = new BasicDBObject();
+        whereQuery.put("_id", guildId);
+        MongoCollection<Document> guild_settings = this.db.getCollection("guild_settings");
+        Document cursor = guild_settings.find(whereQuery).first();
+
+        List<String> igChannels = (List<String>) cursor.get("ignored_channels");
+
+        HashSet<String> set = new HashSet<>(igChannels);
+
+        if(set.add(key)) {
+            igChannels.add(key);
+        }
+
+        Bson filter = Filters.eq("_id", guildId);
+        Bson updated = Updates.set("ignored_channels", igChannels);
+
+        guild_settings.updateOne(filter, updated);
+    }
+
+    @Override
+    public void unIgnoreChannel(long guildId, String key) {
+        BasicDBObject whereQuery = new BasicDBObject();
+        whereQuery.put("_id", guildId);
+        MongoCollection<Document> guild_settings = this.db.getCollection("guild_settings");
+        Document cursor = guild_settings.find(whereQuery).first();
+
+        List<String> igChannels = (List<String>) cursor.get("ignored_channels");
+
+        igChannels.remove(key);
+        Bson filter = Filters.eq("_id", guildId);
+        Bson updated = Updates.set("ignored_channels", igChannels);
+
+        guild_settings.updateOne(filter, updated);
     }
 }
