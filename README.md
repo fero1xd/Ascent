@@ -3,9 +3,7 @@
 Ascent is a Discord music bot written in Java ([JDA](https://github.com/DV8FromTheWorld/JDA)) 
 
 
-## Installation
-
-Platforms that ascent supports
+## Platforms that ascent supports
 
 ```bash
 1. Youtube
