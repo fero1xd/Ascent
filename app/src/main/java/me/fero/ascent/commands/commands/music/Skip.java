@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent;
+import net.dv8tion.jda.api.requests.RestAction;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -67,7 +68,8 @@ public class Skip implements ICommand {
                         this.waiter.waitForEvent(
                                 GuildMessageReactionAddEvent.class,
                                 (e) -> {
-                                    if(e.getMember().getUser().isBot() || !e.getReactionEmote().getEmoji().equalsIgnoreCase("👍") || !e.getMessageId().equals(message.getId())) return false;
+                                    if(e.getMember().getUser().isBot() || !e.getReactionEmote().isEmoji() || !e.getReactionEmote().getEmoji().equalsIgnoreCase(unicode) || !e.getMessageId().equals(message.getId())) return false;
+
                                     if (!e.getGuild().getSelfMember().getVoiceState().inVoiceChannel()) {
                                         message.removeReaction(unicode).queue();
                                         return false;
@@ -134,7 +136,9 @@ public class Skip implements ICommand {
                         this.waiter.waitForEvent(
                                 GuildMessageReactionRemoveEvent.class,
                                 (e) -> {
-                                    if(e.getMember().getUser().isBot() || !e.getReactionEmote().getEmoji().equalsIgnoreCase("👍") || !e.getMessageId().equals(message.getId())) return false;
+
+                                    if(e.retrieveMember().complete().getUser().isBot() || !e.getReactionEmote().isEmoji() || !e.getReactionEmote().getEmoji().equalsIgnoreCase(unicode) || !e.getMessageId().equals(message.getId())) return false;
+
                                     if (!e.getGuild().getSelfMember().getVoiceState().inVoiceChannel()) {
                                         return false;
                                     }
@@ -144,13 +148,11 @@ public class Skip implements ICommand {
                                     }
 
                                     if (!e.getMember().getVoiceState().getChannel().getId().equalsIgnoreCase(e.getGuild().getSelfMember().getVoiceState().getChannel().getId())) {
-//                                        message.removeReaction(unicode).queue();
-
                                         return false;
                                     }
                                     if (musicManager.scheduler.votingGoingOn) {
                                         if (musicManager.scheduler.votes.contains(e.getMember())) {
-                                            musicManager.scheduler.votes = musicManager.scheduler.votes.stream().filter((vote) -> vote != e.getMember()).collect(Collectors.toList());
+                                            musicManager.scheduler.votes = musicManager.scheduler.votes.stream().filter((vote) -> !vote.getId().equals(e.getMember().getId())).collect(Collectors.toList());
 
                                             return false;
                                         }

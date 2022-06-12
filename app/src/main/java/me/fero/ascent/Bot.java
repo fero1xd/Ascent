@@ -8,6 +8,7 @@ import me.fero.ascent.database.DatabaseManager;
 import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.spotify.SpotifyAudioSourceManager;
 import me.fero.ascent.utils.Waiter;
+import me.fero.ascent.youtube.YoutubeAPI;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -46,10 +47,15 @@ public class Bot {
 
         jda.addEventListeners(new Listener(instance2), Waiter.instance.waiter);
         jda.addEventListeners(new SlashCommandListener());
+
+
+
         jda.build();
         YoutubeHttpContextFilter.setPAPISID(Config.get("papisid"));
         YoutubeHttpContextFilter.setPSID(Config.get("psid"));
 
+
+//        YoutubeAPI.getInstance();
     }
 
 

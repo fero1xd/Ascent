@@ -2,8 +2,7 @@ package me.fero.ascent.commands.commands.music;
 
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -21,6 +20,7 @@ public class MusicCommand  {
 
         final Member selfMember = ctx.getSelfMember();
 
+        
         GuildVoiceState selfVoiceState = selfMember.getVoiceState();
         final Member member =  ctx.getMember();
         final GuildVoiceState memberVoiceState = member.getVoiceState();
@@ -43,6 +43,7 @@ public class MusicCommand  {
 
         AudioManager audioManager = ctx.getGuild().getAudioManager();
         audioManager.setSelfDeafened(true);
+
 
         if(!selfVoiceState.inVoiceChannel()) {
             if(cmd.getName().equalsIgnoreCase("leave")) {
@@ -71,17 +72,30 @@ public class MusicCommand  {
                 }
 
                 final VoiceChannel memberChannel = memberVoiceState.getChannel();
+
+                if(memberChannel.getType() == ChannelType.STAGE) {
+                    StageChannel stageChannelById = ctx.getGuild().getStageChannelById(memberChannel.getId());
+
+                    if(!stageChannelById.isModerator(ctx.getSelfMember())) {
+                        channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "I do not have `manage channel` permission on this stage", null, null, null).build()).queue();
+                        return;
+                    }
+
+                    if(stageChannelById.getStageInstance() == null) {
+                       stageChannelById.createStageInstance("Ascent Music").queue();
+                    }
+                    ctx.getGuild().requestToSpeak();
+                }
+
                 audioManager.openAudioConnection(memberChannel);
                 cmd.handle(ctx);
             }
-
             else {
                 EmbedBuilder builder = Embeds.notInSameVcEmbed(member);
                 builder.setDescription("Bot must be present in a VoiceChannel to use this Command");
                 channel.sendMessageEmbeds(builder.build()).queue();
             }
             return;
-
         }
 
         if (!memberVoiceState.getChannel().getId().equals(selfVoiceState.getChannel().getId())) {

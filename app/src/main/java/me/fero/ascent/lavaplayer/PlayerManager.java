@@ -86,8 +86,6 @@ public class PlayerManager {
                     channel.sendMessageEmbeds(builder.build())
                             .queue();
 
-
-
                     for(AudioTrack track : tracks) {
                         track.setUserData(ctx.getAuthor().getIdLong());
                         musicManager.scheduler.queue(track);

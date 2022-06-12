@@ -284,7 +284,7 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
             Track[] items = execute.getItems();
 
-            if(items[0] == null) {
+            if(items.length == 0) {
                 ctx.getChannel().sendMessageEmbeds(Embeds.createBuilder(null, "Couldn't find anything on spotify", null, null, null).build()).queue();
                 return;
             }
@@ -356,8 +356,6 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                     }
                 );
             });
-
-
 
         }catch (Exception e) {
             e.printStackTrace();

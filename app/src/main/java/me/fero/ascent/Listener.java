@@ -108,9 +108,9 @@ public class Listener extends ListenerAdapter {
 
 
         User selfUser = event.getGuild().getSelfMember().getUser();
-        String mention = "<@!" + selfUser.getId() + ">";
+        String mention = "<@" + selfUser.getId() + ">";
 
-        if(raw.equalsIgnoreCase(mention)) {
+        if(raw.trim().equalsIgnoreCase(mention)) {
             event.getChannel().sendMessageEmbeds(Embeds.createBuilder(null, "My prefix is `" + prefix + "`", null, null, null).build()).queue();
             return;
         }
