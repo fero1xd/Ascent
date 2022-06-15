@@ -65,13 +65,15 @@ public class MusicCommand  {
 
             )
             {
-                if(!selfMember.hasPermission(Permission.VOICE_CONNECT))
+
+
+                final VoiceChannel memberChannel = memberVoiceState.getChannel();
+
+                if(!selfMember.hasPermission(memberChannel, Permission.VOICE_CONNECT))
                 {
                     channel.sendMessageEmbeds(Embeds.notEnoughPermsEmbed(member).build()).queue();
                     return;
                 }
-
-                final VoiceChannel memberChannel = memberVoiceState.getChannel();
 
                 if(memberChannel.getType() == ChannelType.STAGE) {
                     StageChannel stageChannelById = ctx.getGuild().getStageChannelById(memberChannel.getId());
