@@ -5,28 +5,29 @@ import me.fero.ascent.Config;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.database.RedisDataStore;
+import me.fero.ascent.objects.BaseCommand;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.interactions.components.Button;
 
 import java.awt.*;
 import java.util.List;
 
-public class Help implements ICommand {
+public class Help extends BaseCommand {
     private final CommandManager manager;
 
     public Help(CommandManager manager){
         this.manager = manager;
+        this.name = "help";
+        this.help = "Shows the list of commands";
+        this.aliases = List.of("commands", "cmds", "commandlist");
     }
 
     @Override
-    public void handle(CommandContext ctx) {
+    public void execute(CommandContext ctx) {
         List<String> args = ctx.getArgs();
         TextChannel channel = ctx.getChannel();
-        Member member = ctx.getMember();
-//        String prefix = VeryBadDesign.PREFIXES.get(ctx.getGuild().getIdLong());
         String prefix = RedisDataStore.getInstance().getPrefix(ctx.getGuild().getIdLong());
 
         if(args.isEmpty()) {
@@ -35,7 +36,7 @@ public class Help implements ICommand {
             StringBuilder moderatorBuilder = new StringBuilder();
 
 
-            for(ICommand cmd : manager.getCommands()) {
+            for(ICommand cmd : manager.getCommands().values()) {
                 if(cmd.getType().equalsIgnoreCase("music")) {
                     musicBuilder.append("`").append(prefix).append(cmd.getName()).append("` ").append(cmd.getHelp()).append("\n");
                 }
@@ -59,8 +60,6 @@ public class Help implements ICommand {
                     Button.link(Config.get("vote_url"), "Vote for me"),
                     Button.link(Config.get("invite_url"), "Invite me")
             ).queue();
-
-
             return;
         }
 
@@ -71,26 +70,12 @@ public class Help implements ICommand {
             return;
         }
 
-        if(command.getUsage() != null) {
-            channel.sendMessageEmbeds(Embeds.createBuilder(null, prefix + command.getUsage(), null, null, null).build()).queue();
+        if(command.getUsage(prefix) != null) {
+            channel.sendMessageEmbeds(Embeds.createBuilder(null, command.getUsage(prefix), null, null, null).build()).queue();
         }
         else {
             channel.sendMessageEmbeds(Embeds.createBuilder(null, command.getHelp(), null, null, null).build()).queue();
         }
     }
 
-    @Override
-    public String getName() {
-        return "help";
-    }
-
-    @Override
-    public String getHelp() {
-        return "Shows the list of commands";
-    }
-
-    @Override
-    public List<String> getAliases() {
-        return List.of("commands", "cmds", "commandlist");
-    }
 }

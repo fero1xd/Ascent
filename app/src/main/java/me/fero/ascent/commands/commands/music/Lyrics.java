@@ -106,8 +106,8 @@ public class Lyrics implements ICommand {
     }
 
     @Override
-    public String getUsage() {
-        return "lyrics *<track name>";
+    public String getUsage(String prefix) {
+        return prefix + "lyrics *<track name>";
     }
 
     private String getLyrics(String query) {

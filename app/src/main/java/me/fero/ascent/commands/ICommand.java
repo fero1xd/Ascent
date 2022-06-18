@@ -7,7 +7,7 @@ public interface ICommand {
 
     String getName();
     String getHelp();
-    default String getUsage() {
+    default String getUsage(String prefix) {
         return null;
     };
 
@@ -23,5 +23,5 @@ public interface ICommand {
     default int cooldownInSeconds() {
         return 0;
     }
-
+    default boolean mayAutoJoin() { return false; }
 }

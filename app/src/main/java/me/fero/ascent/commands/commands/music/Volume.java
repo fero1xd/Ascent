@@ -1,7 +1,6 @@
 package me.fero.ascent.commands.commands.music;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import me.fero.ascent.Config;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.lavaplayer.GuildMusicManager;
@@ -13,8 +12,8 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import java.util.List;
 
 public class Volume implements ICommand {
-    @Override
 
+    @Override
     public void handle(CommandContext ctx) {
         final TextChannel channel = ctx.getChannel();
         List<String> args = ctx.getArgs();
@@ -65,8 +64,8 @@ public class Volume implements ICommand {
     }
 
     @Override
-    public String getUsage() {
-        return "volume <0-100>";
+    public String getUsage(String prefix) {
+        return prefix + "volume <0-100>";
     }
 
     @Override

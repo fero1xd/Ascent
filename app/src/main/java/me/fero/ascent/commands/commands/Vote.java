@@ -3,13 +3,20 @@ package me.fero.ascent.commands.commands;
 import me.fero.ascent.Config;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.objects.BaseCommand;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 
-public class Vote implements ICommand {
+public class Vote extends BaseCommand {
+
+    public Vote() {
+        this.name = "vote";
+        this.help = "Vote me on top.gg";
+    }
+
     @Override
-    public void handle(CommandContext ctx) {
+    public void execute(CommandContext ctx) {
         TextChannel channel = ctx.getChannel();
 
         EmbedBuilder builder = Embeds.createBuilder("Vote me!", "We are accepting vote anytime.",
@@ -20,15 +27,5 @@ public class Vote implements ICommand {
 
 
         channel.sendMessageEmbeds(builder.build()).queue();
-    }
-
-    @Override
-    public String getName() {
-        return "vote";
-    }
-
-    @Override
-    public String getHelp() {
-        return "Vote me on top.gg";
     }
 }

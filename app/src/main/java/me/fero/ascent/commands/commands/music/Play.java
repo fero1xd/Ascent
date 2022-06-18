@@ -56,7 +56,7 @@ public class Play implements ICommand {
     }
 
     @Override
-    public String getUsage() {
+    public String getUsage(String prefix) {
         return "play <track_name/link>";
     }
 
@@ -81,5 +81,10 @@ public class Play implements ICommand {
     @Override
     public int cooldownInSeconds() {
         return 5;
+    }
+
+    @Override
+    public boolean mayAutoJoin() {
+        return true;
     }
 }

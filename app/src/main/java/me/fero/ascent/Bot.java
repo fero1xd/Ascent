@@ -46,7 +46,7 @@ public class Bot {
         jda.enableCache(CacheFlag.VOICE_STATE);
 
         jda.addEventListeners(new Listener(instance2), Waiter.instance.waiter);
-        jda.addEventListeners(new SlashCommandListener());
+        // jda.addEventListeners(new SlashCommandListener());
 
 
 

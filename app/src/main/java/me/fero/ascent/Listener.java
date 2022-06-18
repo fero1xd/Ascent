@@ -120,8 +120,6 @@ public class Listener extends ListenerAdapter {
         }
     }
 
-
-
     @Override
     public void onGuildVoiceUpdate(@NotNull GuildVoiceUpdateEvent event) {
         if(event.getMember().getUser() != event.getGuild().getSelfMember().getUser()) {

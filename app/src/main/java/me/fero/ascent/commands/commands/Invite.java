@@ -1,18 +1,22 @@
 package me.fero.ascent.commands.commands;
 
-import me.duncte123.botcommons.messaging.EmbedUtils;
 import me.fero.ascent.Config;
 import me.fero.ascent.commands.CommandContext;
-import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.objects.BaseCommand;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.interactions.components.Button;
 
 
-public class Invite implements ICommand {
+public class Invite extends BaseCommand {
+
+    public Invite() {
+        this.name = "invite";
+        this.help = "Gets the invite link for the bot";
+    }
+
     @Override
-    public void handle(CommandContext ctx) {
+    public void execute(CommandContext ctx) {
         String invite = Config.get("invite_url");
 
         EmbedBuilder builder = Embeds.createBuilder("Invite me!", null,
@@ -24,15 +28,5 @@ public class Invite implements ICommand {
                 Button.link(invite, "Invite")
         ).queue();
 
-    }
-
-    @Override
-    public String getName() {
-        return "invite";
-    }
-
-    @Override
-    public String getHelp() {
-        return "Gets the invite link for the bot";
     }
 }

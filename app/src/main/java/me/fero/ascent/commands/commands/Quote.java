@@ -2,13 +2,20 @@ package me.fero.ascent.commands.commands;
 
 import me.duncte123.botcommons.web.WebUtils;
 import me.fero.ascent.commands.CommandContext;
-import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.objects.BaseCommand;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.entities.TextChannel;
 
-public class Quote implements ICommand {
+public class Quote extends BaseCommand {
+
+    public Quote() {
+        this.name = "quote";
+        this.help = "Sends a random quote";
+        this.cooldownInSeconds = 10;
+    }
+
     @Override
-    public void handle(CommandContext ctx) {
+    public void execute(CommandContext ctx) {
         TextChannel channel = ctx.getChannel();
 
         WebUtils.ins.getJSONObject("https://api.kanye.rest/").async((json) -> {
@@ -22,21 +29,5 @@ public class Quote implements ICommand {
                 channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Cannot send a quote right now!", null, null, null).build()).queue();
 
             });
-
-    }
-
-    @Override
-    public String getName() {
-        return "quote";
-    }
-
-    @Override
-    public String getHelp() {
-        return "Sends a random quote";
-    }
-
-    @Override
-    public int cooldownInSeconds() {
-        return 10;
     }
 }

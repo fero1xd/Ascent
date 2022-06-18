@@ -64,4 +64,9 @@ public class Join implements ICommand {
     public List<String> getAliases() {
         return List.of("j");
     }
+
+    @Override
+    public boolean mayAutoJoin() {
+        return true;
+    }
 }

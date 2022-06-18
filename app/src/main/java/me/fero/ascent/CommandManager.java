@@ -1,10 +1,10 @@
 package me.fero.ascent;
 
-import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.commands.commands.*;
 import me.fero.ascent.commands.commands.music.*;
+import me.fero.ascent.commands.commands.music.Queue;
 import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.utils.CooldownUtil;
 import me.fero.ascent.utils.Embeds;
@@ -12,14 +12,13 @@ import me.fero.ascent.utils.Waiter;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class CommandManager {
-    private final List<ICommand> commands = new ArrayList<>();
+    private final HashMap<String, ICommand> commands = new HashMap<>();
+    private final HashMap<String, String> aliases = new HashMap<>();
 
     public CommandManager() {
         addCommand(new Ping());
@@ -57,7 +56,6 @@ public class CommandManager {
         addCommand(new RemoveFav(Waiter.getInstance().waiter));
         addCommand(new Quote());
         addCommand(new Banner());
-//        addCommand(new Lyrics());
         addCommand(new Ignore());
 
         addCommand(new Vote());
@@ -65,14 +63,50 @@ public class CommandManager {
     }
 
     private void addCommand(ICommand cmd) {
-        boolean nameFound = this.commands.stream().anyMatch((it) -> it.getName().equalsIgnoreCase(cmd.getName()));
-        if(nameFound) {
-            throw new IllegalArgumentException("A Command with this name is already present");
+        String name = cmd.getName();
+
+        if (name.contains(" ")) {
+            throw new IllegalArgumentException(" Name can't have spaces!");
         }
-        commands.add(cmd);
+
+        final String cmdName = name.toLowerCase();
+
+        if (this.commands.containsKey(cmdName)) {
+            throw new IllegalArgumentException(String.format("Command %s already present", cmdName));
+        }
+
+        final List<String> lowerAliasses = cmd.getAliases().stream().map(String::toLowerCase).collect(Collectors.toList());
+
+        if (!lowerAliasses.isEmpty()) {
+            for (final String alias : lowerAliasses) {
+                if (this.aliases.containsKey(alias)) {
+                    throw new IllegalArgumentException(String.format(
+                            "Alias %s already present (Stored for: %s, trying to insert: %s))",
+                            alias,
+                            this.aliases.get(alias),
+                            name
+                    ));
+                }
+
+                if (this.commands.containsKey(alias)) {
+                    throw new IllegalArgumentException(String.format(
+                            "Alias %s already present for command (Stored for: %s, trying to insert: %s))",
+                            alias,
+                            this.commands.get(alias).getClass().getSimpleName(),
+                            cmd.getClass().getSimpleName()
+                    ));
+                }
+            }
+
+            for (final String alias : lowerAliasses) {
+                this.aliases.put(alias, name);
+            }
+        }
+
+        this.commands.put(cmdName, cmd);
     }
 
-    public List<ICommand> getCommands() {
+    public HashMap<String, ICommand> getCommands() {
         return commands;
     }
 
@@ -80,12 +114,16 @@ public class CommandManager {
     public ICommand getCommand(String search) {
         String searchLower = search.toLowerCase();
 
-        for(ICommand cmd : commands){
-            if(cmd.getName().equalsIgnoreCase(searchLower) || cmd.getAliases().contains(searchLower)) {
-                return cmd;
+        ICommand cmd = this.commands.get(searchLower);
+        if(cmd == null) {
+            final String forAlias = this.aliases.get(searchLower);
+
+            if (forAlias != null) {
+                cmd = this.commands.get(forAlias);
             }
         }
-        return null;
+
+        return cmd;
     }
 
    void handle(GuildMessageReceivedEvent event, String prefix) {
@@ -122,8 +160,4 @@ public class CommandManager {
             cmd.handle(ctx);
         }
     }
-
-
-
-
 }

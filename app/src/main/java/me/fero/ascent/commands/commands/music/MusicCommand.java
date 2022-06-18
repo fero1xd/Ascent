@@ -12,7 +12,7 @@ import net.dv8tion.jda.api.managers.AudioManager;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MusicCommand  {
+public class MusicCommand {
     @SuppressWarnings("ConstantConditions")
     public static void handleMusicCommands(CommandContext ctx, ICommand cmd) {
         final TextChannel channel = ctx.getChannel();
@@ -20,7 +20,7 @@ public class MusicCommand  {
 
         final Member selfMember = ctx.getSelfMember();
 
-        
+
         GuildVoiceState selfVoiceState = selfMember.getVoiceState();
         final Member member =  ctx.getMember();
         final GuildVoiceState memberVoiceState = member.getVoiceState();
@@ -53,20 +53,8 @@ public class MusicCommand  {
                 return;
             }
             // check if its a auto join command
-            else if(cmd.getName().equalsIgnoreCase("join")
-                    ||
-                    cmd.getName().equalsIgnoreCase("play")
-                    ||
-                    cmd.getName().equalsIgnoreCase("search")
-                    ||
-                    cmd.getName().equalsIgnoreCase("scplay")
-                    ||
-                    cmd.getName().equalsIgnoreCase("spotify")
-
-            )
+            else if(cmd.mayAutoJoin())
             {
-
-
                 final VoiceChannel memberChannel = memberVoiceState.getChannel();
 
                 if(!selfMember.hasPermission(memberChannel, Permission.VOICE_CONNECT))
@@ -111,6 +99,5 @@ public class MusicCommand  {
             }
         }
         cmd.handle(ctx);
-
     }
 }

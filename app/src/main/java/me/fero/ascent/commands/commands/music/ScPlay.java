@@ -68,7 +68,12 @@ public class ScPlay implements ICommand {
     }
 
     @Override
-    public String getUsage() {
-        return "scplay <track_name>";
+    public String getUsage(String prefix) {
+        return prefix + "scplay <track_name>";
+    }
+
+    @Override
+    public boolean mayAutoJoin() {
+        return true;
     }
 }

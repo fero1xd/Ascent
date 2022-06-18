@@ -1,12 +1,10 @@
 package me.fero.ascent.commands.commands.music;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.utils.Embeds;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.List;
@@ -87,7 +85,7 @@ public class Move implements ICommand {
     }
 
     @Override
-    public String getUsage() {
+    public String getUsage(String prefix) {
         return "move <index1> <index2>";
     }
 }

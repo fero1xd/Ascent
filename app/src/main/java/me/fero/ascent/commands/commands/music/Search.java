@@ -68,12 +68,17 @@ public class Search implements ICommand {
     }
 
     @Override
-    public String getUsage() {
-        return "search <track_name>";
+    public String getUsage(String prefix) {
+        return prefix + "search <track_name>";
     }
 
     @Override
     public int cooldownInSeconds() {
         return 5;
+    }
+
+    @Override
+    public boolean mayAutoJoin() {
+        return true;
     }
 }

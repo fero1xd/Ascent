@@ -2,7 +2,7 @@ package me.fero.ascent.commands.commands;
 
 import me.fero.ascent.Config;
 import me.fero.ascent.commands.CommandContext;
-import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.objects.BaseCommand;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -14,9 +14,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-public class Banner implements ICommand {
+public class Banner extends BaseCommand {
+
+    public Banner() {
+        this.name = "banner";
+        this.help = "Gets the banner of the user";
+        this.cooldownInSeconds = 10;
+    }
+
     @Override
-    public void handle(CommandContext ctx) {
+    public void execute(CommandContext ctx) {
         TextChannel channel = ctx.getChannel();
         User author = ctx.getAuthor();
         try {
@@ -57,18 +64,4 @@ public class Banner implements ICommand {
 
     }
 
-    @Override
-    public String getName() {
-        return "banner";
-    }
-
-    @Override
-    public String getHelp() {
-        return "Gets the banner of the user";
-    }
-
-    @Override
-    public int cooldownInSeconds() {
-        return 10;
-    }
 }

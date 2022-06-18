@@ -69,4 +69,10 @@ public class Spotify implements ICommand {
     public int cooldownInSeconds() {
         return 5;
     }
+
+
+    @Override
+    public boolean mayAutoJoin() {
+        return true;
+    }
 }
