@@ -84,7 +84,8 @@ public abstract class BaseCommand implements ICommand {
         return isDjNeeded;
     }
 
-    public int getCooldownInSeconds() {
+    @Override
+    public int cooldownInSeconds() {
         return cooldownInSeconds;
     }
 }

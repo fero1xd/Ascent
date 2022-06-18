@@ -60,8 +60,5 @@ public class Banner extends BaseCommand {
             e.printStackTrace();
             channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "This command ran into some issue", null, null, null).build()).queue();
         }
-
-
     }
-
 }

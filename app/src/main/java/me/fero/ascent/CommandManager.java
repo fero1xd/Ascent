@@ -57,9 +57,7 @@ public class CommandManager {
         addCommand(new Quote());
         addCommand(new Banner());
         addCommand(new Ignore());
-
         addCommand(new Vote());
-
     }
 
     private void addCommand(ICommand cmd) {
