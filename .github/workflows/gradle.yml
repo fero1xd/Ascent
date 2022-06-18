@@ -33,3 +33,5 @@ jobs:
       run: ./gradlew --no-daemon dependencies --warning-mode=summary
     - name: build
       run: ./gradlew --no-daemon build --warning-mode=summary
+    - name: run
+      run: pm2 restart ascent
