@@ -3,6 +3,9 @@ package me.fero.ascent.commands.commands.music;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 
+import me.fero.ascent.lavaplayer.GuildMusicManager;
+import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavaplayer.TrackScheduler;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -13,13 +16,25 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class MusicCommand {
+
+    public static int checkVc(Member member, Member self) {
+        final GuildVoiceState memberVoiceState = member.getVoiceState();
+
+        if(!memberVoiceState.inVoiceChannel()) return -1;
+
+        GuildVoiceState voiceState = self.getVoiceState();
+
+        if(!voiceState.inVoiceChannel()) return -2;
+
+        return memberVoiceState.getChannel().getId().equals(voiceState.getChannel().getId()) ? 0 : -3;
+    }
+
     @SuppressWarnings("ConstantConditions")
     public static void handleMusicCommands(CommandContext ctx, ICommand cmd) {
         final TextChannel channel = ctx.getChannel();
 
 
         final Member selfMember = ctx.getSelfMember();
-
 
         GuildVoiceState selfVoiceState = selfMember.getVoiceState();
         final Member member =  ctx.getMember();
@@ -44,6 +59,8 @@ public class MusicCommand {
         AudioManager audioManager = ctx.getGuild().getAudioManager();
         audioManager.setSelfDeafened(true);
 
+        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
+        TrackScheduler scheduler = musicManager.scheduler;
 
         if(!selfVoiceState.inVoiceChannel()) {
             if(cmd.getName().equalsIgnoreCase("leave")) {
@@ -78,6 +95,7 @@ public class MusicCommand {
                 }
 
                 audioManager.openAudioConnection(memberChannel);
+                scheduler.setBindedChannel(ctx.getChannel());
                 cmd.handle(ctx);
             }
             else {
@@ -98,6 +116,8 @@ public class MusicCommand {
                 return;
             }
         }
+
+        scheduler.setBindedChannel(ctx.getChannel());
         cmd.handle(ctx);
     }
 }

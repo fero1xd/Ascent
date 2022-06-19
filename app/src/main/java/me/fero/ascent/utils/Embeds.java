@@ -4,8 +4,12 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.duncte123.botcommons.messaging.EmbedUtils;
 import me.fero.ascent.Config;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.interactions.components.Button;
+import net.dv8tion.jda.api.utils.data.DataObject;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -97,9 +101,7 @@ public class Embeds {
         String title = "Added to queue 💿";
         String description = "[" + track.getInfo().title + " - " + track.getInfo().author + "]" + "(" + track.getInfo().uri + ")";
 
-        String footer = "Requested by " + member.getEffectiveName();
-        String footerUrl = member.getEffectiveAvatarUrl();
-        EmbedBuilder builder = Embeds.createBuilder(title, description, footer, footerUrl, null);
+        EmbedBuilder builder = Embeds.createBuilder(title, description, member != null ? "Requested by " + member.getEffectiveName() : null, member != null ? member.getEffectiveAvatarUrl()  : null, null);
         boolean isStream = track.getInfo().isStream;
 
         long millis = track.getDuration();
@@ -135,9 +137,29 @@ public class Embeds {
 
     }
 
+
+    public static void sendSongEmbed(Member member, AudioTrack track, TextChannel channel) {
+        EmbedBuilder builder = songEmbed(member, track);
+
+        Button btn = Button.danger("addToFavourite", Emoji.fromMarkdown("🤍"));
+        Button pauseBtn = Button.primary("pause", Emoji.fromMarkdown("<:pause:988040572596027422>"));
+        Button skipBtn = Button.primary("skip", Emoji.fromMarkdown("<:skip:988041074398355467>"));
+
+        channel.sendMessageEmbeds(builder.build()).setActionRow(btn, pauseBtn, skipBtn).queue();
+    }
+
+    public static List<Button> getControls(boolean pause) {
+        Button btn = Button.danger("addToFavourite", Emoji.fromMarkdown("🤍"));
+
+
+        Button pauseBtn = Button.primary(pause ? "pause" : "resume", Emoji.fromMarkdown(pause ? "<:pause:988040572596027422>" : "<:resume:988040811960745995>"));
+        Button skipBtn = Button.primary("skip", Emoji.fromMarkdown("<:skip:988041074398355467>"));
+
+        return List.of(btn, pauseBtn, skipBtn);
+    }
+
     public static EmbedBuilder showProfileEmbed(Member member) {
         // Embeds
-
         EmbedBuilder builder = Embeds.createBuilder(null, null, "Requested by " + member.getEffectiveName(), member.getEffectiveAvatarUrl(), Color.YELLOW);
         builder.setThumbnail(member.getEffectiveAvatarUrl());
         builder.addField("Profile", member.getEffectiveName() + "#" + member.getUser().getDiscriminator(), false);

@@ -1,19 +1,20 @@
 package me.fero.ascent;
 
+import me.fero.ascent.commands.commands.music.*;
 import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.lavaplayer.GuildMusicManager;
 import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.utils.Embeds;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.managers.AudioManager;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -219,5 +220,44 @@ public class Listener extends ListenerAdapter {
         }
     }
 
+    @Override
+    public void onButtonClick(@NotNull ButtonClickEvent event) {
+        String componentId = event.getComponentId();
 
+        // Vc check
+        Member member = event.getMember();
+        int code = MusicCommand.checkVc(member, event.getGuild().getSelfMember());
+
+        if(code != 0) {
+//            if(code == -1) {
+//                event.replyEmbeds(Embeds.notConnectedToVcEmbed(member).build()).setEphemeral(true).queue();
+//            }
+//            else if (code == -2) {
+//                EmbedBuilder builder = Embeds.notInSameVcEmbed(member);
+//                builder.setDescription("Bot must be present in a VoiceChannel to use this Command");
+//                event.replyEmbeds(builder.build()).setEphemeral(true).queue();
+//            }
+//            else if (code == -3) {
+//                event.replyEmbeds(Embeds.notInSameVcEmbed(member).setDescription("Already connected to a different channel").build()).setEphemeral(true).queue();
+//            }
+
+            // Will not respond
+            return;
+        }
+
+        switch (componentId) {
+            case "addToFavourite":
+                Favourite.addToFavourite(true, event, null);
+                break;
+            case "pause":
+                Pause.pause(true, event, null);
+                break;
+            case "resume":
+                Resume.resume(true, event, null);
+                break;
+            case "skip":
+                ForceSkip.forceSkip(true, event, null);
+                break;
+        }
+    }
 }

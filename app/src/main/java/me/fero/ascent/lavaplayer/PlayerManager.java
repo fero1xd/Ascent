@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
+import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu;
 
 import java.util.*;
@@ -58,6 +59,7 @@ public class PlayerManager {
             channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Max queue size reached", null, null, null).build()).queue();
             return;
         }
+
         if(SpotifyAudioSourceManager.INSTANCE.loadItem(ctx, query)) {
             return;
         }
@@ -65,10 +67,14 @@ public class PlayerManager {
         this.audioPlayerManager.loadItemOrdered(musicManager, query, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                musicManager.scheduler.queue(track);
                 track.setUserData(ctx.getAuthor().getIdLong());
-                channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
+                musicManager.scheduler.queue(track);
+
+                if(musicManager.scheduler.queue.size() > 0) {
+                    channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
+                }
             }
+
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
@@ -127,9 +133,16 @@ public class PlayerManager {
                                     AudioTrack audioTrack = tracks.get(index);
                                     if(audioTrack!=null) {
                                         message.delete().queue();
-                                        channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), audioTrack).build()).queue();
+
                                         audioTrack.setUserData(ctx.getAuthor().getIdLong());
                                         musicManager.scheduler.queue(audioTrack);
+
+                                        if(musicManager.scheduler.queue.size() > 0) {
+                                            channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), audioTrack).build()).queue();
+                                        }
+//                                        else {
+//                                            Embeds.sendSongEmbed(ctx.getMember(), audioTrack, channel);
+//                                        }
                                     }
 
                                 },
@@ -137,11 +150,16 @@ public class PlayerManager {
                                 () -> {
                                     message.delete().queue();
                                     final AudioTrack track = tracks.get(0);
-                                    channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
 
                                     track.setUserData(ctx.getAuthor().getIdLong());
-
                                     musicManager.scheduler.queue(track);
+
+                                    if(musicManager.scheduler.queue.size() > 0) {
+                                        channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
+                                    }
+//                                    else {
+//                                        Embeds.sendSongEmbed(ctx.getMember(), track, channel);
+//                                    }
                                 }
                         );
                     }));
@@ -149,15 +167,20 @@ public class PlayerManager {
                 }
 
                 final AudioTrack track = tracks.get(0);
-                channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
-                track.setUserData(ctx.getAuthor().getIdLong());
 
+                track.setUserData(ctx.getAuthor().getIdLong());
                 musicManager.scheduler.queue(track);
+
+                if(musicManager.scheduler.queue.size() > 0) {
+                    channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
+                }
+//                else {
+//                    Embeds.sendSongEmbed(ctx.getMember(), track, channel);
+//                }
             }
 
             @Override
             public void noMatches() {
-
                 Listener.LOGGER.error("No Tracks Found");
 
                 EmbedBuilder builder = EmbedUtils.getDefaultEmbed();
@@ -177,7 +200,6 @@ public class PlayerManager {
         if(instance == null) {
             instance = new PlayerManager();
         }
-
         return instance;
     }
 

@@ -12,14 +12,11 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent;
-import net.dv8tion.jda.api.requests.RestAction;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class Skip implements ICommand {
@@ -52,6 +49,7 @@ public class Skip implements ICommand {
 
 
         List<Member> filteredMembers = vc.getMembers().stream().filter(member -> !member.getUser().isBot()).collect(Collectors.toList());
+
         if(filteredMembers.size() >= 3) {
             musicManager.scheduler.votingGoingOn = true;
             musicManager.scheduler.votes.clear();
@@ -68,7 +66,7 @@ public class Skip implements ICommand {
                         this.waiter.waitForEvent(
                                 GuildMessageReactionAddEvent.class,
                                 (e) -> {
-                                    if(e.getMember().getUser().isBot() || !e.getReactionEmote().isEmoji() || !e.getReactionEmote().getEmoji().equalsIgnoreCase(unicode) || !e.getMessageId().equals(message.getId())) return false;
+                                    if(e.getMember().getUser().isBot() || !e.getReactionEmote().isEmoji() || !e.getReactionEmote().getEmoji().equalsIgnoreCase("\uD83D\uDC4D") || !e.getMessageId().equals(message.getId())) return false;
 
                                     if (!e.getGuild().getSelfMember().getVoiceState().inVoiceChannel()) {
                                         message.removeReaction(unicode).queue();
@@ -89,7 +87,6 @@ public class Skip implements ICommand {
                                     if (musicManager.scheduler.votingGoingOn) {
                                         if (musicManager.scheduler.votes.contains(e.getMember())) {
                                             e.getReaction().removeReaction().queue();
-
                                             return false;
                                         }
 
@@ -114,8 +111,11 @@ public class Skip implements ICommand {
                                         musicManager.scheduler.nextTrack();
                                         message.delete().queue();
 
-                                        EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
-                                        channel.sendMessageEmbeds(builder.build()).queue();
+                                        ctx.getMessage().addReaction(":thumbsup:").queue();
+
+//                                        EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
+//                                        channel.sendMessageEmbeds(builder.build()).queue();
+
                                     }
 
                                 },
@@ -137,7 +137,7 @@ public class Skip implements ICommand {
                                 GuildMessageReactionRemoveEvent.class,
                                 (e) -> {
 
-                                    if(e.retrieveMember().complete().getUser().isBot() || !e.getReactionEmote().isEmoji() || !e.getReactionEmote().getEmoji().equalsIgnoreCase(unicode) || !e.getMessageId().equals(message.getId())) return false;
+                                    if(e.retrieveMember().complete().getUser().isBot() || !e.getReactionEmote().isEmoji() || !e.getReactionEmote().getEmoji().equalsIgnoreCase("\uD83D\uDC4D") || !e.getMessageId().equals(message.getId())) return false;
 
                                     if (!e.getGuild().getSelfMember().getVoiceState().inVoiceChannel()) {
                                         return false;
@@ -172,9 +172,10 @@ public class Skip implements ICommand {
                                         // Skip the song
                                         musicManager.scheduler.nextTrack();
                                         message.delete().queue();
+                                        ctx.getMessage().addReaction(":thumbsup:").queue();
 
-                                        EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
-                                        channel.sendMessageEmbeds(builder.build()).queue();
+//                                        EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
+//                                        channel.sendMessageEmbeds(builder.build()).queue();
                                     }
 
                                 },
@@ -188,8 +189,10 @@ public class Skip implements ICommand {
         }
 
         musicManager.scheduler.nextTrack();
-        EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
-        channel.sendMessageEmbeds(builder.build()).queue();
+//        EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
+//        channel.sendMessageEmbeds(builder.build()).queue();
+
+        ctx.getMessage().addReaction(":thumbsup:").queue();
     }
 
     @Override

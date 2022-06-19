@@ -7,26 +7,48 @@ import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 
 import java.util.List;
 
 public class ForceSkip implements ICommand {
     @Override
     public void handle(CommandContext ctx) {
-        TextChannel channel = ctx.getChannel();
-        Member member = ctx.getMember();
-        GuildMusicManager manager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
+        forceSkip(false, null, ctx);
 
-        if(!member.hasPermission(Permission.MESSAGE_MANAGE)) {
-            channel.sendMessageEmbeds(Embeds.createBuilder(null, "You do not have enough permission", null, null, null).build()).queue();
-            return;
-        }
+    }
+
+    public static void forceSkip(boolean isInteraction, ButtonClickEvent event, CommandContext ctx) {
+        TextChannel channel = !isInteraction ? ctx.getChannel() : event.getTextChannel();
+        Member member = !isInteraction ? ctx.getMember() : event.getMember();
+        Guild guild = !isInteraction ? ctx.getGuild() : event.getGuild();
+        GuildMusicManager manager = PlayerManager.getInstance().getMusicManager(guild);
 
         if(manager.audioPlayer.getPlayingTrack() == null) {
             EmbedBuilder builder = Embeds.createBuilder("Error!", "No track playing", null,null, null);
-            channel.sendMessageEmbeds(builder.build()).queue();
+
+            if(!isInteraction) {
+                channel.sendMessageEmbeds(builder.build()).queue();
+            }
+            else {
+                event.getMessage().delete().queue();
+            }
+            return;
+        }
+
+
+        if(!member.hasPermission(Permission.MESSAGE_MANAGE)) {
+            if(!isInteraction) {
+                channel.sendMessageEmbeds(Embeds.createBuilder(null, "You do not have enough permission", null, null, null).build()).queue();
+            }
+            else {
+                event.replyEmbeds(Embeds.createBuilder(null, "You do not have enough permission", null, null, null).build())
+                        .setEphemeral(true)
+                        .queue();
+            }
             return;
         }
 
@@ -37,11 +59,16 @@ public class ForceSkip implements ICommand {
             manager.scheduler.votingGoingOn = false;
         }
         manager.scheduler.nextTrack();
-        EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
-        channel.sendMessageEmbeds(builder.build()).queue();
+        // EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
 
+        if(!isInteraction) {
+            // channel.sendMessageEmbeds(builder.build()).queue();
+            ctx.getMessage().addReaction(":thumbsup:").queue();
+        }
+        else {
+            event.getMessage().delete().queue();
+        }
     }
-
     @Override
     public String getName() {
         return "forceskip";

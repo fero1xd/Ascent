@@ -7,23 +7,37 @@ import me.fero.ascent.lavaplayer.GuildMusicManager;
 import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.GuildVoiceState;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
-import org.jetbrains.annotations.NotNull;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
+import net.dv8tion.jda.api.interactions.components.Button;
+
+import java.util.List;
 
 public class Pause implements ICommand {
     @Override
-    @SuppressWarnings("ConstantConditions")
-    public void handle(@NotNull CommandContext ctx) {
-        final TextChannel channel = ctx.getChannel();
-        final Member member =  ctx.getMember();
+    public void handle(CommandContext ctx) {
+       pause(false, null, ctx);
+    }
 
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
+    public static void pause(boolean isInteraction, ButtonClickEvent event, CommandContext ctx) {
+        TextChannel channel = !isInteraction ? ctx.getChannel() : event.getTextChannel();
+        Member member = !isInteraction ? ctx.getMember() : event.getMember();
+        Guild guild = !isInteraction ? ctx.getGuild() : event.getGuild();
+
+        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(guild);
+
         AudioPlayer audioPlayer = musicManager.audioPlayer;
         if(audioPlayer.getPlayingTrack() == null) {
             EmbedBuilder builder = Embeds.createBuilder("Error!", "No track playing", "Requested by " + member.getEffectiveName(), member.getEffectiveAvatarUrl(), null);
-            channel.sendMessageEmbeds(builder.build()).queue();
+            if(!isInteraction) {
+                channel.sendMessageEmbeds(builder.build()).queue();
+            }
+            else {
+                event.replyEmbeds(builder.build()).setEphemeral(true).queue();
+            }
             return;
         }
 
@@ -31,17 +45,30 @@ public class Pause implements ICommand {
         if(player.isPaused()) {
             EmbedBuilder builder = Embeds.createBuilder("Error!", "Player is already paused", "Requested by " + member.getEffectiveName(), member.getEffectiveAvatarUrl(), null);
 
-            channel.sendMessageEmbeds(builder.build()).queue();
-            return;
+            if(!isInteraction) {
+                channel.sendMessageEmbeds(builder.build()).queue();
+                return;
+            }
         }
-
-        player.setPaused(true);
 
         EmbedBuilder builder = Embeds.createBuilder(null, "Player paused", "Requested by " + member.getEffectiveName(), member.getEffectiveAvatarUrl(), null);
 
-        channel.sendMessageEmbeds(builder.build()).queue();
+        if(!isInteraction) {
+            channel.sendMessageEmbeds(builder.build()).queue();
+        }
+        else {
+            MessageEmbed embed = event.getMessage().getEmbeds().get(0);
+            EmbedBuilder b = new EmbedBuilder(embed);
+            b.setFooter("Paused by " + member.getEffectiveName(), member.getEffectiveAvatarUrl());
+            List<Button> controls = Embeds.getControls(false);
+            //event.getMessage().editMessageEmbeds(b.build()).setActionRow(controls).queue();
 
+            event.editMessageEmbeds(b.build()).setActionRow(controls).queue();
+        }
+
+        player.setPaused(true);
     }
+
 
     @Override
     public String getName() {

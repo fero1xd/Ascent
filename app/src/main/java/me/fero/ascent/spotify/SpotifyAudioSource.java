@@ -108,7 +108,6 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                 @Override
                 public void trackLoaded(AudioTrack track) {
                     System.out.println("track loaded");
-
                 }
 
                 @Override
@@ -121,12 +120,11 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
                     AudioTrack audioTrack = playlist.getTracks().get(0);
                     audioTrack.setUserData(ctx.getAuthor().getIdLong());
-
-
-
-
-                    ctx.getChannel().sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), audioTrack).setDescription("[" + audioTrack.getInfo().title + " - " + audioTrack.getInfo().author + "]" + "(" + track.getExternalUrls().get("spotify") + ")").build()).queue();
                     musicManager.scheduler.queue(audioTrack);
+
+                    if(musicManager.scheduler.queue.size() > 0) {
+                        ctx.getChannel().sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), audioTrack).setDescription("[" + audioTrack.getInfo().title + " - " + audioTrack.getInfo().author + "]" + "(" + track.getExternalUrls().get("spotify") + ")").build()).queue();
+                    }
                 }
 
                 @Override
@@ -200,6 +198,8 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                         audioTrack.setUserData(ctx.getAuthor().getIdLong());
 
                         musicManager.scheduler.queue(audioTrack);
+
+
                     }
 
                     @Override
@@ -334,9 +334,13 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
                                             AudioTrack audioTrack = tracks.get(0);
                                             message.delete().queue();
-                                            channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), audioTrack).build()).queue();
+
                                             audioTrack.setUserData(ctx.getAuthor().getIdLong());
                                             musicManager.scheduler.queue(audioTrack);
+
+                                            if(musicManager.scheduler.queue.size() > 0) {
+                                                channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), audioTrack).build()).queue();
+                                            }
                                         }
 
                                         @Override
@@ -370,7 +374,7 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
             this.spi.setAccessToken(clientCredentials.getAccessToken());
 
-            LOGGER.info("Successfully retrieved access token! " + clientCredentials.getAccessToken());
+            LOGGER.info("Successfully retrieved access token!");
             LOGGER.info("The access token expires in " + clientCredentials.getExpiresIn() + " seconds");
 
         }catch (IOException | SpotifyWebApiException | ParseException e) {

@@ -15,7 +15,6 @@ import java.util.List;
 
 public class Loop implements ICommand {
     @Override
-    @SuppressWarnings("ConstantConditions")
     public void handle(CommandContext ctx) {
         final TextChannel channel = ctx.getChannel();
 
