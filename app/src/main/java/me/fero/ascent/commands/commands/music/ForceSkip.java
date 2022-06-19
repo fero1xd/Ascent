@@ -63,7 +63,7 @@ public class ForceSkip implements ICommand {
 
         if(!isInteraction) {
             // channel.sendMessageEmbeds(builder.build()).queue();
-            ctx.getMessage().addReaction(":thumbsup:").queue();
+            ctx.getMessage().addReaction("👍").queue();
         }
         else {
             event.getMessage().delete().queue();

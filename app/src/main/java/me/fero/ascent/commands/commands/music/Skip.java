@@ -111,7 +111,7 @@ public class Skip implements ICommand {
                                         musicManager.scheduler.nextTrack();
                                         message.delete().queue();
 
-                                        ctx.getMessage().addReaction(":thumbsup:").queue();
+                                        ctx.getMessage().addReaction("👍").queue();
 
 //                                        EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
 //                                        channel.sendMessageEmbeds(builder.build()).queue();
@@ -172,7 +172,7 @@ public class Skip implements ICommand {
                                         // Skip the song
                                         musicManager.scheduler.nextTrack();
                                         message.delete().queue();
-                                        ctx.getMessage().addReaction(":thumbsup:").queue();
+                                        ctx.getMessage().addReaction("👍").queue();
 
 //                                        EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
 //                                        channel.sendMessageEmbeds(builder.build()).queue();
@@ -192,7 +192,7 @@ public class Skip implements ICommand {
 //        EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
 //        channel.sendMessageEmbeds(builder.build()).queue();
 
-        ctx.getMessage().addReaction(":thumbsup:").queue();
+        ctx.getMessage().addReaction("👍").queue();
     }
 
     @Override
