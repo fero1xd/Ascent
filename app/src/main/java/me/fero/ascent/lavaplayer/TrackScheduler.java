@@ -47,8 +47,10 @@ public class TrackScheduler extends AudioEventAdapter {
     public void nextTrack() {
         if(queue.isEmpty()) {
             this.player.startTrack(null, false);
+            deleteLastSongEmbed();
             return;
         }
+
         try {
             this.player.startTrack(queue.remove(0), false);
         } catch (Exception e) {
@@ -59,16 +61,24 @@ public class TrackScheduler extends AudioEventAdapter {
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
         this.player.setPaused(false);
-
-        if(this.lastSongEmbed != null) {
-            this.lastSongEmbed.delete().queue();
-        }
+        deleteLastSongEmbed();
 
         if(this.bindedChannel != null && this.currentGuild != null) {
             Member member = this.currentGuild.retrieveMemberById((long) track.getUserData()).complete();
-            this.bindedChannel.sendMessageEmbeds(Embeds.songEmbed(member, track).setTitle("Now started playing").build()).setActionRow(Embeds.getControls(true)).queue();
+            this.bindedChannel.sendMessageEmbeds(Embeds.songEmbed(member, track).setTitle("Now Started playing 📀").build())
+                    .setActionRow(Embeds.getControls(true)).queue(this::setLastSongEmbed);
         }
     }
+
+    public void deleteLastSongEmbed() {
+        if(this.lastSongEmbed != null) {
+            try {
+                this.lastSongEmbed.delete().queue();
+            } catch (Exception ignored) {}
+            this.setLastSongEmbed(null);
+        }
+    }
+
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {

@@ -133,7 +133,6 @@ public class Listener extends ListenerAdapter {
             List<Member> copy = new ArrayList<>();
 
 
-
             boolean canClose = false;
             for(Member member : members) {
                 if(member.getUser() != event.getGuild().getSelfMember().getUser()) {
@@ -154,6 +153,8 @@ public class Listener extends ListenerAdapter {
                 musicManager.scheduler.isRepeating = false;
                 musicManager.scheduler.queue.clear();
                 musicManager.scheduler.player.stopTrack();
+                musicManager.scheduler.deleteLastSongEmbed();
+
                 // **RESET EVERYTHING**
                 musicManager.scheduler.totalMembers.clear();
                 musicManager.scheduler.votes.clear();
@@ -162,7 +163,6 @@ public class Listener extends ListenerAdapter {
 
                 AudioManager audioManager = event.getGuild().getAudioManager();
                 audioManager.closeAudioConnection();
-
             }
 
         }
@@ -195,8 +195,7 @@ public class Listener extends ListenerAdapter {
                     musicManager.scheduler.isRepeating = false;
                     musicManager.scheduler.queue.clear();
                     musicManager.scheduler.player.stopTrack();
-
-
+                    musicManager.scheduler.deleteLastSongEmbed();
 
                     AudioManager audioManager = event.getGuild().getAudioManager();
                     audioManager.closeAudioConnection();
@@ -210,6 +209,7 @@ public class Listener extends ListenerAdapter {
                 musicManager.scheduler.isRepeating = false;
                 musicManager.scheduler.queue.clear();
                 musicManager.scheduler.player.stopTrack();
+                musicManager.scheduler.deleteLastSongEmbed();
 
                 // **RESET EVERYTHING**
                 musicManager.scheduler.totalMembers.clear();

@@ -148,6 +148,11 @@ public class Embeds {
         channel.sendMessageEmbeds(builder.build()).setActionRow(btn, pauseBtn, skipBtn).queue();
     }
 
+    public static EmbedBuilder songEmbedWithoutDetails(AudioTrack track) {
+        return createBuilder(null, "Added " + "**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** by **" + track.getInfo().author + "** to the queue",
+                null, null, null);
+    }
+
     public static List<Button> getControls(boolean pause) {
         Button btn = Button.danger("addToFavourite", Emoji.fromMarkdown("🤍"));
 

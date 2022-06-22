@@ -123,7 +123,7 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                     musicManager.scheduler.queue(audioTrack);
 
                     if(musicManager.scheduler.queue.size() > 0) {
-                        ctx.getChannel().sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), audioTrack).setDescription("[" + audioTrack.getInfo().title + " - " + audioTrack.getInfo().author + "]" + "(" + track.getExternalUrls().get("spotify") + ")").build()).queue();
+                        ctx.getChannel().sendMessageEmbeds(Embeds.songEmbedWithoutDetails(audioTrack).setDescription("[" + audioTrack.getInfo().title + " - " + audioTrack.getInfo().author + "]" + "(" + track.getExternalUrls().get("spotify") + ")").build()).queue();
                     }
                 }
 
@@ -178,7 +178,7 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                 }
             }
 
-            ctx.getChannel().sendMessageEmbeds(Embeds.createBuilder(null, "Spotify Playlist Loaded : Adding " + finalPlaylist.size() + " Tracks to the queue", null, null, null).build()).queue();
+            ctx.getChannel().sendMessageEmbeds(Embeds.createBuilder(null, "Spotify Playlist Loaded - Adding **" + finalPlaylist.size() + "** Tracks to the queue", null, null, null).build()).queue();
             for(Track track : finalPlaylist) {
                 final String query = "ytsearch:" + track.getName() + " " + track.getArtists()[0].getName();
                 PlayerManager.getInstance().audioPlayerManager.loadItemOrdered(musicManager, query, new AudioLoadResultHandler() {
@@ -198,8 +198,6 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                         audioTrack.setUserData(ctx.getAuthor().getIdLong());
 
                         musicManager.scheduler.queue(audioTrack);
-
-
                     }
 
                     @Override
@@ -232,7 +230,7 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
             final Album album = albumFuture.get();
             TrackSimplified[] items = album.getTracks().getItems();
 
-            ctx.getChannel().sendMessageEmbeds(Embeds.createBuilder(null, "Spotify Album Loaded : Adding " + items.length + " Tracks to the queue", null, null, null).build()).queue();
+            ctx.getChannel().sendMessageEmbeds(Embeds.createBuilder(null, "Spotify Album Loaded - Adding **" + items.length + "** Tracks to the queue", null, null, null).build()).queue();
 
             for(final TrackSimplified track : items) {
                 GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
@@ -292,6 +290,7 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
             EmbedBuilder builder = EmbedUtils.getDefaultEmbed();
             builder.setDescription("Select a track. You have 15 seconds");
             final int trackCount = Math.min(items.length, 20);
+
             String s = UUID.randomUUID().toString();
             SelectionMenu.Builder menu = SelectionMenu.create(s);
             menu.setPlaceholder("Select your track here");
@@ -299,8 +298,9 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
             for (int i = 0; i <  trackCount; i++) {
                 final Track track = items[i];
-                menu.addOption(track.getName(), track.getName() + " " + track.getArtists()[0].getName() + " index " + i, track.getArtists()[0].getName());
+                menu.addOption(track.getName(), String.valueOf(i), track.getArtists()[0].getName());
             }
+
             GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
             channel.sendMessageEmbeds(builder.build()).setActionRow(menu.build()).queue((message) -> {
                         waiter.waitForEvent(
@@ -316,8 +316,9 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                                     return true;
                                 },
                                 (e) -> {
-                                    String q = e.getValues().get(0);
-                                    q = q.substring(0, q.indexOf("index")).trim();
+                                    int index = Integer.parseInt(e.getValues().get(0));
+                                    Track track = items[index];
+                                    String q = track.getName() + " " + track.getArtists()[0].getName();
                                     final String sQuery = "ytsearch:" + q;
 
 
@@ -339,7 +340,7 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                                             musicManager.scheduler.queue(audioTrack);
 
                                             if(musicManager.scheduler.queue.size() > 0) {
-                                                channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), audioTrack).build()).queue();
+                                                channel.sendMessageEmbeds(Embeds.songEmbedWithoutDetails(audioTrack).build()).queue();
                                             }
                                         }
 

@@ -56,11 +56,10 @@ public class Favourite implements ICommand {
                     RedisDataStore.getInstance().removeFavourite(guildId, userId, track.get("_id"));
                     DatabaseManager.INSTANCE.removeFavourite(guildId, userId, track.get("_id"));
                     if(!isInteraction) {
-                        channel.sendMessageEmbeds(Embeds.createBuilder(null, "Track removed from your favourites successfully", null, null, null).build()).queue();
-
+                        channel.sendMessageEmbeds(Embeds.createBuilder(null, "Removed **" + playingTrack.getInfo().title + "** from your favourites", null, null, null).build()).queue();
                     }
                     else {
-                        event.replyEmbeds(Embeds.createBuilder(null, "Track removed from your favourites successfully", null, null, null).build()).setEphemeral(true).queue();
+                        event.replyEmbeds(Embeds.createBuilder(null, "Removed **" + playingTrack.getInfo().title + "** from your favourites", null, null, null).build()).setEphemeral(true).queue();
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -80,10 +79,10 @@ public class Favourite implements ICommand {
         DatabaseManager.INSTANCE.addFavourite(guildId, userId, playingTrack, guild, String.valueOf(objectId));
 
         if(!isInteraction) {
-            channel.sendMessageEmbeds(Embeds.createBuilder(null, "Added this track to your favourites", null, null, null).build()).queue();
+            channel.sendMessageEmbeds(Embeds.createBuilder(null, "Added **" + playingTrack.getInfo().title + "** to your favourites", null, null, null).build()).queue();
 
         }else {
-            event.replyEmbeds(Embeds.createBuilder(null, "Added this track to your favourites", null, null, null).build())
+            event.replyEmbeds(Embeds.createBuilder(null, "Added **" + playingTrack.getInfo().title + "** to your favourites", null, null, null).build())
                     .setEphemeral(true).queue();
         }
     }

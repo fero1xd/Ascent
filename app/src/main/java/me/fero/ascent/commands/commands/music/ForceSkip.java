@@ -18,7 +18,6 @@ public class ForceSkip implements ICommand {
     @Override
     public void handle(CommandContext ctx) {
         forceSkip(false, null, ctx);
-
     }
 
     public static void forceSkip(boolean isInteraction, ButtonClickEvent event, CommandContext ctx) {
@@ -52,22 +51,22 @@ public class ForceSkip implements ICommand {
             return;
         }
 
-
         if(manager.scheduler.votingGoingOn) {
             manager.scheduler.totalMembers.clear();
             manager.scheduler.votes.clear();
             manager.scheduler.votingGoingOn = false;
         }
+
         manager.scheduler.nextTrack();
-        // EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
 
         if(!isInteraction) {
-            // channel.sendMessageEmbeds(builder.build()).queue();
             ctx.getMessage().addReaction("👍").queue();
         }
-        else {
-            event.getMessage().delete().queue();
-        }
+//        else {
+//            try {
+//                event.getMessage().delete().queue();
+//            } catch (Exception ignored) {}
+//        }
     }
     @Override
     public String getName() {

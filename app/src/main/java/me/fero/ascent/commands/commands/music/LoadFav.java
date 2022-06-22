@@ -42,7 +42,6 @@ public class LoadFav implements ICommand {
                 @Override
                 public void trackLoaded(AudioTrack track) {
                     track.setUserData(ctx.getAuthor().getIdLong());
-
                     musicManager.scheduler.queue(track);
                 }
 

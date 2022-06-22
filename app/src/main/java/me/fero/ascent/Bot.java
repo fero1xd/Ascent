@@ -46,16 +46,10 @@ public class Bot {
         jda.enableCache(CacheFlag.VOICE_STATE);
 
         jda.addEventListeners(new Listener(instance2), Waiter.instance.waiter);
-        // jda.addEventListeners(new SlashCommandListener());
-
-
 
         jda.build();
         YoutubeHttpContextFilter.setPAPISID(Config.get("papisid"));
         YoutubeHttpContextFilter.setPSID(Config.get("psid"));
-
-
-//        YoutubeAPI.getInstance();
     }
 
 

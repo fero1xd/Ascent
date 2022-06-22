@@ -71,10 +71,9 @@ public class PlayerManager {
                 musicManager.scheduler.queue(track);
 
                 if(musicManager.scheduler.queue.size() > 0) {
-                    channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
+                    channel.sendMessageEmbeds(Embeds.songEmbedWithoutDetails(track).build()).queue();
                 }
             }
-
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
@@ -83,9 +82,7 @@ public class PlayerManager {
                 // User Loaded playlist
                 if(!playlist.isSearchResult()) {
                     EmbedBuilder builder = EmbedUtils.getDefaultEmbed();
-                    builder.setFooter("Requested by " + ctx.getMember().getEffectiveName(), ctx.getMember().getEffectiveAvatarUrl());
-                    builder.setTitle("Added to queue 💿");
-                    String description = "[" + playlist.getName() + "]" + "(" + query + ")";
+                    String description = "Loading **[" + playlist.getName() + "]" + "(" + query + ")** in the queue";
                     builder.setDescription(description);
 
 
@@ -138,7 +135,7 @@ public class PlayerManager {
                                         musicManager.scheduler.queue(audioTrack);
 
                                         if(musicManager.scheduler.queue.size() > 0) {
-                                            channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), audioTrack).build()).queue();
+                                            channel.sendMessageEmbeds(Embeds.songEmbedWithoutDetails(audioTrack).build()).queue();
                                         }
 //                                        else {
 //                                            Embeds.sendSongEmbed(ctx.getMember(), audioTrack, channel);
@@ -155,7 +152,7 @@ public class PlayerManager {
                                     musicManager.scheduler.queue(track);
 
                                     if(musicManager.scheduler.queue.size() > 0) {
-                                        channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
+                                        channel.sendMessageEmbeds(Embeds.songEmbedWithoutDetails(track).build()).queue();
                                     }
 //                                    else {
 //                                        Embeds.sendSongEmbed(ctx.getMember(), track, channel);
@@ -172,7 +169,7 @@ public class PlayerManager {
                 musicManager.scheduler.queue(track);
 
                 if(musicManager.scheduler.queue.size() > 0) {
-                    channel.sendMessageEmbeds(Embeds.songEmbed(ctx.getMember(), track).build()).queue();
+                    channel.sendMessageEmbeds(Embeds.songEmbedWithoutDetails(track).build()).queue();
                 }
 //                else {
 //                    Embeds.sendSongEmbed(ctx.getMember(), track, channel);
