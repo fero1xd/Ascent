@@ -159,8 +159,9 @@ public class Embeds {
 
         Button pauseBtn = Button.primary(pause ? "pause" : "resume", Emoji.fromMarkdown(pause ? "<:pause:988040572596027422>" : "<:resume:988040811960745995>"));
         Button skipBtn = Button.primary("skip", Emoji.fromMarkdown("<:skip:988041074398355467>"));
+        Button loopBtn = Button.primary("loop", Emoji.fromMarkdown("<:loop_ascent:989181126096601118>"));
 
-        return List.of(btn, pauseBtn, skipBtn);
+        return List.of(btn, pauseBtn, skipBtn, loopBtn);
     }
 
     public static EmbedBuilder showProfileEmbed(Member member) {

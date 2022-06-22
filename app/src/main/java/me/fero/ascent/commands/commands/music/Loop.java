@@ -7,38 +7,50 @@ import me.fero.ascent.lavaplayer.GuildMusicManager;
 import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 
 import java.util.List;
 
 public class Loop implements ICommand {
     @Override
     public void handle(CommandContext ctx) {
-        final TextChannel channel = ctx.getChannel();
+        loop(false, null, ctx);
+    }
 
-        final Member member =  ctx.getMember();
 
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
-        List<String> args = ctx.getArgs();
+    public static void loop(boolean isInteraction, ButtonClickEvent event, CommandContext ctx) {
+        Guild guild = !isInteraction ? ctx.getGuild() : event.getGuild();
+        Member member = !isInteraction ? ctx.getMember() : event.getMember();
+        TextChannel channel = !isInteraction ? ctx.getChannel() : event.getTextChannel();
+
+        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(guild);
+        List<String> args = !isInteraction ? ctx.getArgs() : List.of();
 
 
         EmbedBuilder builder = EmbedUtils.getDefaultEmbed();
         builder.setFooter("Requested by " + member.getEffectiveName(), member.getEffectiveAvatarUrl());
-        if(!args.isEmpty() && args.get(0).equalsIgnoreCase("status")) {
 
-            builder.setDescription("➿ Loop is " + (musicManager.scheduler.isRepeating ? "Enabled" : "Disabled"));
-
+        if(!isInteraction && !args.isEmpty() && args.get(0).equalsIgnoreCase("status")) {
+            builder.setDescription("<:loop_ascent:989181126096601118> Loop is " + (musicManager.scheduler.isRepeating ? "Enabled" : "Disabled"));
             channel.sendMessageEmbeds(builder.build()).queue();
             return;
         }
 
         final boolean newRepeating = !musicManager.scheduler.isRepeating;
         musicManager.scheduler.isRepeating = newRepeating;
-        builder.setDescription("➿ Loop is " + (newRepeating ? "Enabled" : "Disabled"));
 
-        channel.sendMessageEmbeds(builder.build()).queue();
+        builder.setDescription("<:loop_ascent:989181126096601118> Loop is " + (newRepeating ? "Enabled" : "Disabled"));
+
+        if(!isInteraction) {
+            channel.sendMessageEmbeds(builder.build()).queue();
+        }
+        else {
+            event.replyEmbeds(builder.build()).setEphemeral(true).queue();
+        }
     }
 
     @Override

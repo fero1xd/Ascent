@@ -23,7 +23,7 @@ public class Ping extends BaseCommand {
         jda.getRestPing().queue(
                 (__) -> {
                     EmbedBuilder builder = Embeds.createBuilder("Pong!", null, "Requested by " + ctx.getMember().getEffectiveName(), ctx.getMember().getEffectiveAvatarUrl(), null);
-                    builder.addField("Current ping", "`" + jda.getGatewayPing() + " ms" + "`", false);
+                    builder.addField("Current ping <a:onlineping:989099916439732244>", "`" + jda.getGatewayPing() + " ms" + "`", false);
                     builder.setThumbnail(ctx.getSelfMember().getEffectiveAvatarUrl());
                     builder.addField("Prefix", "`" + prefix + "`", false);
                     builder.addField("Serving", "`" + ctx.getJDA().getGuilds().size() + " Guilds" + "`", false);

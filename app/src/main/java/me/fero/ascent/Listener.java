@@ -31,6 +31,8 @@ public class Listener extends ListenerAdapter {
     private JDA jda;
     private final RedisDataStore redis;
 
+
+
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
         LOGGER.info("{} is ready", event.getJDA().getSelfUser().getAsTag());
@@ -123,6 +125,7 @@ public class Listener extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceUpdate(@NotNull GuildVoiceUpdateEvent event) {
+
         if(event.getMember().getUser() != event.getGuild().getSelfMember().getUser()) {
             VoiceChannel channelLeft = event.getChannelLeft();
             if(channelLeft == null) {
@@ -149,7 +152,6 @@ public class Listener extends ListenerAdapter {
             }
 
             if(copy.isEmpty() && canClose) {
-
                 musicManager.scheduler.isRepeating = false;
                 musicManager.scheduler.queue.clear();
                 musicManager.scheduler.player.stopTrack();
@@ -257,6 +259,9 @@ public class Listener extends ListenerAdapter {
                 break;
             case "skip":
                 ForceSkip.forceSkip(true, event, null);
+                break;
+            case "loop":
+                Loop.loop(true, event, null);
                 break;
         }
     }

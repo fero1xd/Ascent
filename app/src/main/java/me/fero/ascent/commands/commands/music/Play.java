@@ -57,7 +57,7 @@ public class Play implements ICommand {
 
     @Override
     public String getUsage(String prefix) {
-        return "play <track_name/link>";
+        return prefix + "play <track_name/link>";
     }
 
     private boolean isUrl(String url) {

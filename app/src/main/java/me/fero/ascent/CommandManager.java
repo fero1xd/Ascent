@@ -58,6 +58,8 @@ public class CommandManager {
         addCommand(new Banner());
         addCommand(new Ignore());
         addCommand(new Vote());
+        addCommand(new BassBoost());
+        addCommand(new DevLogs());
     }
 
     private void addCommand(ICommand cmd) {

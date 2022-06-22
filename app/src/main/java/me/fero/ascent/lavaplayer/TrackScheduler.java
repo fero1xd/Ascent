@@ -1,5 +1,6 @@
 package me.fero.ascent.lavaplayer;
 
+import com.sedmelluq.discord.lavaplayer.filter.equalizer.EqualizerFactory;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
@@ -29,10 +30,32 @@ public class TrackScheduler extends AudioEventAdapter {
     public Boolean votingGoingOn = false;
     public int MAX_QUEUE_SIZE = 100;
 
+    private static final float[] BASS_BOOST = {
+            0.2f,
+            0.15f,
+            0.1f,
+            0.05f,
+            0.0f,
+            -0.05f,
+            -0.1f,
+            -0.1f,
+            -0.1f,
+            -0.1f,
+            -0.1f,
+            -0.1f,
+            -0.1f,
+            -0.1f,
+            -0.1f
+    };
+    private final EqualizerFactory factory;
 
     public TrackScheduler(AudioPlayer player, Guild guild) {
         this.player = player;
         this.currentGuild = guild;
+        this.factory = new EqualizerFactory();
+
+        this.player.setFilterFactory(this.factory);
+        this.player.setFrameBufferDuration(500);
     }
 
     public void queue(AudioTrack track) {
@@ -65,7 +88,7 @@ public class TrackScheduler extends AudioEventAdapter {
 
         if(this.bindedChannel != null && this.currentGuild != null) {
             Member member = this.currentGuild.retrieveMemberById((long) track.getUserData()).complete();
-            this.bindedChannel.sendMessageEmbeds(Embeds.songEmbed(member, track).setTitle("Now Started playing 📀").build())
+            this.bindedChannel.sendMessageEmbeds(Embeds.songEmbed(member, track).setTitle("Now Started Playing <a:music:989100325522796544>").build())
                     .setActionRow(Embeds.getControls(true)).queue(this::setLastSongEmbed);
         }
     }
@@ -78,7 +101,6 @@ public class TrackScheduler extends AudioEventAdapter {
             this.setLastSongEmbed(null);
         }
     }
-
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
@@ -139,4 +161,13 @@ public class TrackScheduler extends AudioEventAdapter {
         return check;
     }
 
+    public void bassBoost(float percentage)
+    {
+        final float multiplier = percentage / 100.00f;
+
+        for (int i = 0; i < BASS_BOOST.length; i++)
+        {
+            this.factory.setGain(i, BASS_BOOST[i] * multiplier);
+        }
+    }
 }
