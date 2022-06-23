@@ -23,6 +23,9 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Listener extends ListenerAdapter {
 
@@ -30,23 +33,32 @@ public class Listener extends ListenerAdapter {
     private final CommandManager manager;
     private JDA jda;
     private final RedisDataStore redis;
-
-
+    private ScheduledExecutorService service;
+    private boolean turn = true;
 
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
         LOGGER.info("{} is ready", event.getJDA().getSelfUser().getAsTag());
-//        AudioSourceManager.INSTANCE.getTrack("https://open.spotify.com/track/5ABDkxey7t1BJqL8oNt20V?si=oOoIwf4pSPuvhHzG5r1H0Q");
-
 
         this.jda = event.getJDA();
-        this.jda.getPresence().setActivity(Activity.listening("help in " + event.getGuildTotalCount() + " Guilds"));
 
-//        long guildId = 854330456207654933L;
-//        this.jda.getGuildById(guildId).updateCommands().addCommands(
-//                        new CommandData("play", "Plays a song from youtube")
-//                        .addOption(OptionType.STRING, "query", "Link or search query", true)
-//        ).queue();
+        this.service = Executors.newScheduledThreadPool(1, (r) -> new Thread(r, "Status-Update-Thread"));
+
+        service.scheduleAtFixedRate(() -> {
+            if(turn) {
+                List<Guild> guilds = this.jda.getGuilds();
+                long amount = 0;
+                for(Guild guild : guilds) {
+                    amount += guild.getMemberCount();
+                }
+                this.jda.getPresence().setActivity(Activity.playing("music for " + amount + " members"));
+            }
+            else {
+                this.jda.getPresence().setActivity(Activity.listening("help in " + event.getGuildTotalCount() + " Guilds"));
+            }
+
+            turn = !turn;
+        }, 0, 2, TimeUnit.HOURS);
     }
 
 
