@@ -2,8 +2,10 @@ package me.fero.ascent.database;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.fero.ascent.Listener;
+import me.fero.ascent.entities.Favourites;
 import me.fero.ascent.entities.GuildModel;
 
+import me.fero.ascent.entities.SavableTrack;
 import net.dv8tion.jda.api.entities.Guild;
 import org.redisson.Redisson;
 import org.redisson.api.RBucket;
@@ -19,7 +21,7 @@ import java.util.HashSet;
 public class RedisDataStore {
     private static RedisDataStore instance;
     private final RedissonClient redisson;
-    public static final Logger LOGGER = LoggerFactory.getLogger(Listener.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(RedisDataStore.class);
 
 
     public RedisDataStore() {
@@ -57,12 +59,13 @@ public class RedisDataStore {
     }
 
 
-    public ArrayList<HashMap<String, String>> getFavourites(Long guildId, Long userId) {
+    public Favourites getFavourites(Long guildId, Long userId) {
         RBucket<GuildModel> bucket = this.redisson.getBucket(String.valueOf(guildId));
         GuildModel guildModel = bucket.get();
+
         if(guildModel.getFavouritesOfUser(userId) == null){
-            ArrayList<HashMap<String, String>> favourites = DatabaseManager.INSTANCE.getFavourites(guildId, userId);
-            guildModel.addNewUserFavourites(favourites, userId);
+            Favourites favourites = DatabaseManager.INSTANCE.getFavourites(guildId, userId);
+            guildModel.addNewUserFavourites(favourites);
             bucket.set(guildModel);
             return favourites;
         }
@@ -73,20 +76,20 @@ public class RedisDataStore {
     public void addFavourite(Long guildId, Long userId, AudioTrack trackToAdd, Guild guild, String idToSet) {
         RBucket<GuildModel> bucket = this.redisson.getBucket(String.valueOf(guildId));
         GuildModel guildModel = bucket.get();
-        ArrayList<HashMap<String, String>> favourites = guildModel.getFavouritesOfUser(userId);
-        if(favourites==null) {
-            ArrayList<HashMap<String, String>> favs = DatabaseManager.INSTANCE.getFavourites(guildId, userId);
-            guildModel.addNewUserFavourites(favs, userId);
+        Favourites favourites = guildModel.getFavouritesOfUser(userId);
+
+        if(favourites == null) {
+            Favourites favs = DatabaseManager.INSTANCE.getFavourites(guildId, userId);
+            guildModel.addNewUserFavourites(favs);
         }
 
-        HashMap<String, String> info = new HashMap<>();
-
-        info.put("_id", idToSet);
-        info.put("name", trackToAdd.getInfo().title);
-        info.put("artist", trackToAdd.getInfo().author);
-        info.put("link", trackToAdd.getInfo().uri);
-        info.put("identifier", trackToAdd.getInfo().identifier);
-        info.put("user", String.valueOf((long) trackToAdd.getUserData()));
+        SavableTrack info = new SavableTrack(idToSet,
+                trackToAdd.getInfo().title,
+                trackToAdd.getInfo().author,
+                trackToAdd.getInfo().uri,
+                trackToAdd.getInfo().identifier,
+                String.valueOf((long) trackToAdd.getUserData())
+        );
 
         guildModel.addFavourites(info, userId);
         bucket.set(guildModel);

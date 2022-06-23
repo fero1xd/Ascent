@@ -7,13 +7,14 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.database.RedisDataStore;
+import me.fero.ascent.entities.Favourites;
+import me.fero.ascent.entities.SavableTrack;
 import me.fero.ascent.lavaplayer.GuildMusicManager;
 import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class LoadFav implements ICommand {
@@ -23,15 +24,15 @@ public class LoadFav implements ICommand {
         long guildId = ctx.getGuild().getIdLong();
         long userId = ctx.getMember().getIdLong();
 
-        ArrayList<HashMap<String, String>> favourites = RedisDataStore.getInstance().getFavourites(guildId, userId);
-        if(favourites.isEmpty()) {
+        Favourites favourites = RedisDataStore.getInstance().getFavourites(guildId, userId);
+        if(favourites.getFavourites().isEmpty()) {
             channel.sendMessageEmbeds(Embeds.createBuilder(null, "Your list is empty...", null, null, null).build()).queue();
             return;
         }
 
         ArrayList<String> urls = new ArrayList<>();
-        for(HashMap<String, String> entry : favourites) {
-            urls.add(entry.get("link"));
+        for(SavableTrack track : favourites.getFavourites()) {
+            urls.add(track.getLink());
         }
 
         GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
@@ -46,22 +47,15 @@ public class LoadFav implements ICommand {
                 }
 
                 @Override
-                public void playlistLoaded(AudioPlaylist playlist) {
-
-                }
+                public void playlistLoaded(AudioPlaylist playlist) {}
 
                 @Override
-                public void noMatches() {
-
-                }
+                public void noMatches() {}
 
                 @Override
-                public void loadFailed(FriendlyException exception) {
-
-                }
+                public void loadFailed(FriendlyException exception) {}
             });
         }
-
     }
 
     @Override

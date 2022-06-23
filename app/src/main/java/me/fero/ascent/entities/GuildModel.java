@@ -3,19 +3,17 @@ package me.fero.ascent.entities;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
+
 
 public class GuildModel implements Serializable {
     private final Long guildId;
     private String prefix;
-    private final ArrayList<HashMap<Long, ArrayList<HashMap<String, String>>>> favourites;
+    private ArrayList<Favourites> favourites;
+
     private HashSet<String> ignoredChannelsId;
 
-
-    public GuildModel(Long guildId, String prefix, ArrayList<HashMap<Long, ArrayList<HashMap<String, String>>>> favourites, HashSet<String> ignoredChannelsId) {
+    public GuildModel(Long guildId, String prefix, ArrayList<Favourites> favourites, HashSet<String> ignoredChannelsId) {
         this.guildId = guildId;
         this.prefix = prefix;
         this.favourites = favourites;
@@ -27,12 +25,13 @@ public class GuildModel implements Serializable {
     }
 
     @Nullable
-    public ArrayList<HashMap<String, String>> getFavouritesOfUser(long userId) {
-        for(HashMap<Long, ArrayList<HashMap<String, String>>> map : favourites) {
-            if(map.containsKey(userId)) {
-                return map.get(userId);
+    public Favourites getFavouritesOfUser(long userId) {
+        for(Favourites fav : this.favourites) {
+            if(fav.getUserId() == userId) {
+                return fav;
             }
         }
+
         return null;
     }
 
@@ -40,43 +39,33 @@ public class GuildModel implements Serializable {
         this.prefix = newPrefix;
     }
 
-    public void addFavourites(HashMap<String, String> newTrack, Long userId) {
-        for(HashMap<Long, ArrayList<HashMap<String, String>>> map : favourites) {
-            if(map.containsKey(userId)) {
-                map.get(userId).add(newTrack);
-                return;
-            }
+    public void addFavourites(SavableTrack newTrack, Long userId) {
+        Favourites favouritesOfUser = this.getFavouritesOfUser(userId);
+
+        if(favouritesOfUser != null) {
+            favouritesOfUser.addFavourite(newTrack);
         }
     }
 
-    public void addNewUserFavourites(ArrayList<HashMap<String, String>> favs, long userId) {
-        HashMap<Long, ArrayList<HashMap<String, String>>> map = new HashMap<>();
-        map.put(userId, favs);
-        this.favourites.add(map);
+    public void addNewUserFavourites(Favourites fav) {
+        Favourites favouritesOfUser = this.getFavouritesOfUser(fav.getUserId());
+        if(favouritesOfUser == null) {
+            this.favourites.add(fav);
+        }
     }
 
     public void clearFavouritesOfUser(Long userId) {
-        for(HashMap<Long, ArrayList<HashMap<String, String>>> map : favourites) {
-            if(map.containsKey(userId)) {
-                map.put(userId, new ArrayList<>());
-                return;
-            }
+        Favourites favouritesOfUser = this.getFavouritesOfUser(userId);
+        if(favouritesOfUser != null) {
+            favouritesOfUser.clearFavourites();
         }
     }
 
-    public void removeFavourite(Long userId, String trackId) {
-        for(HashMap<Long, ArrayList<HashMap<String, String>>> map : favourites) {
-            if(map.containsKey(userId)) {
-                ArrayList<HashMap<String, String>> hashMaps = map.get(userId);
-                for(HashMap<String, String> entry : hashMaps) {
-                    if(entry.get("_id") != null && entry.get("_id").equals(trackId)) {
-                        List<HashMap<String, String>> upd = hashMaps.stream().filter((item) -> !item.get("_id").equals(trackId)).collect(Collectors.toList());
-                        map.put(userId, (ArrayList<HashMap<String, String>>) upd);
-                        return;
-                    }
-                }
-                return;
-            }
+    public void removeFavourite(Long userId, String id) {
+        Favourites favouritesOfUser = this.getFavouritesOfUser(userId);
+
+        if(favouritesOfUser != null) {
+            favouritesOfUser.removeFavourite(id);
         }
     }
 

@@ -4,6 +4,7 @@ import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.database.DatabaseManager;
 import me.fero.ascent.database.RedisDataStore;
+import me.fero.ascent.entities.Favourites;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.entities.TextChannel;
 
@@ -18,8 +19,9 @@ public class ClearFav implements ICommand {
         long guildId = ctx.getGuild().getIdLong();
         long memberId = ctx.getMember().getIdLong();
 
-        ArrayList<HashMap<String, String>> favourites = RedisDataStore.getInstance().getFavourites(guildId, memberId);
-        if(favourites.isEmpty()) {
+        Favourites favourites = RedisDataStore.getInstance().getFavourites(guildId, memberId);
+
+        if(favourites.getFavourites().isEmpty()) {
             channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Your list is empty...", null, null, null).build()).queue();
             return;
         }

@@ -5,6 +5,8 @@ import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.database.DatabaseManager;
 import me.fero.ascent.database.RedisDataStore;
+import me.fero.ascent.entities.Favourites;
+import me.fero.ascent.entities.SavableTrack;
 import me.fero.ascent.lavaplayer.GuildMusicManager;
 import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.utils.Embeds;
@@ -14,14 +16,12 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import org.bson.types.ObjectId;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+
 import java.util.List;
 
 public class Favourite implements ICommand {
     @Override
     public void handle(CommandContext ctx) {
-        TextChannel channel = ctx.getChannel();
         addToFavourite(false, null, ctx);
     }
 
@@ -45,16 +45,13 @@ public class Favourite implements ICommand {
 
         AudioTrack playingTrack = musicManager.scheduler.player.getPlayingTrack();
 
-        ArrayList<HashMap<String, String>> favourites = RedisDataStore.getInstance().getFavourites(guildId, userId);
+        Favourites favourites = RedisDataStore.getInstance().getFavourites(guildId, userId);
 
-        for(HashMap<String, String> entry : favourites) {
-            if(entry.get("identifier").equals(playingTrack.getIdentifier())) {
-
-                int index = favourites.indexOf(entry);
+        for(SavableTrack entry : favourites.getFavourites()) {
+            if(entry.getIdentifier().equals(playingTrack.getIdentifier())) {
                 try {
-                    HashMap<String, String> track = favourites.get(index);
-                    RedisDataStore.getInstance().removeFavourite(guildId, userId, track.get("_id"));
-                    DatabaseManager.INSTANCE.removeFavourite(guildId, userId, track.get("_id"));
+                    RedisDataStore.getInstance().removeFavourite(guildId, userId, entry.getId());
+                    DatabaseManager.INSTANCE.removeFavourite(guildId, userId, entry.getId());
                     if(!isInteraction) {
                         channel.sendMessageEmbeds(Embeds.createBuilder(null, "Removed **" + playingTrack.getInfo().title + "** from your favourites", null, null, null).build()).queue();
                     }

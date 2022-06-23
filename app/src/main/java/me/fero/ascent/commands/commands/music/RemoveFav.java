@@ -6,6 +6,8 @@ import me.fero.ascent.commands.CommandContext;
 import me.fero.ascent.commands.ICommand;
 import me.fero.ascent.database.DatabaseManager;
 import me.fero.ascent.database.RedisDataStore;
+import me.fero.ascent.entities.Favourites;
+import me.fero.ascent.entities.SavableTrack;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
@@ -28,8 +30,8 @@ public class RemoveFav implements ICommand {
         long guildId = ctx.getGuild().getIdLong();
         long userId = ctx.getMember().getIdLong();
 
-        ArrayList<HashMap<String, String>> favourites = RedisDataStore.getInstance().getFavourites(guildId, userId);
-        if(favourites.isEmpty()){
+        Favourites favourites = RedisDataStore.getInstance().getFavourites(guildId, userId);
+        if(favourites.getFavourites().isEmpty()){
             channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Your list is empty...", null, null, null).build()).queue();
             return;
         }
@@ -39,8 +41,8 @@ public class RemoveFav implements ICommand {
         menu.setPlaceholder("Select your track here");
         menu.setRequiredRange(1, 1);
 
-        for(HashMap<String, String> entry : favourites) {
-            menu.addOption(entry.get("name"), String.valueOf(favourites.indexOf(entry)), entry.get("artist"));
+        for(SavableTrack track : favourites.getFavourites()) {
+            menu.addOption(track.getName(), track.getId(), track.getArtist());
         }
 
         channel.sendMessageEmbeds(Embeds.createBuilder(null, "Choose a track to remove from your list", null, null, null).build()).setActionRow(menu.build()).queue((message) -> {
@@ -57,13 +59,13 @@ public class RemoveFav implements ICommand {
                         return true;
                     },
                     (e) -> {
-                        int index = Integer.parseInt(e.getValues().get(0));
+                        String id = e.getValues().get(0);
+
                         message.delete().queue();
 
                         try {
-                            HashMap<String, String> track = favourites.get(index);
-                            RedisDataStore.getInstance().removeFavourite(guildId, userId, track.get("_id"));
-                            DatabaseManager.INSTANCE.removeFavourite(guildId, userId, track.get("_id"));
+                            RedisDataStore.getInstance().removeFavourite(guildId, userId, id);
+                            DatabaseManager.INSTANCE.removeFavourite(guildId, userId, id);
                             channel.sendMessageEmbeds(Embeds.createBuilder(null, "Track removed successfully", null, null, null).build()).queue();
                         } catch (Exception ex) {
                             ex.printStackTrace();

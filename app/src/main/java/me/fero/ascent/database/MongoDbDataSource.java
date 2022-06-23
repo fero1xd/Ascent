@@ -2,8 +2,6 @@ package me.fero.ascent.database;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.MongoCredential;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -12,6 +10,8 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.fero.ascent.Config;
+import me.fero.ascent.entities.Favourites;
+import me.fero.ascent.entities.SavableTrack;
 import net.dv8tion.jda.api.entities.Guild;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -131,7 +131,7 @@ public class MongoDbDataSource implements DatabaseManager{
 
 
     @Override
-    public ArrayList<HashMap<String, String>> getFavourites(long guildId, long userId) {
+    public Favourites getFavourites(long guildId, long userId) {
         BasicDBObject whereQuery = new BasicDBObject();
         whereQuery.put("_id", guildId);
 
@@ -142,27 +142,32 @@ public class MongoDbDataSource implements DatabaseManager{
         List<Document> favourites = (List<Document>) cursor.get("favourites");
 
 
-        ArrayList<HashMap<String, String>> favs = new ArrayList<>();
+
+        ArrayList<SavableTrack> favs = new ArrayList<>();
 
         for(Document doc : favourites) {
             if(doc.get(String.valueOf(userId)) != null) {
                 List<Document> favsOfUser =  (List<Document>) doc.get(String.valueOf(userId));
+
                 for(Document entry : favsOfUser) {
-                    HashMap<String, String> info = new HashMap<>();
-                    info.put("_id", (String) entry.get("_id"));
-                    info.put("name", (String) entry.get("name"));
-                    info.put("artist", (String) entry.get("artist"));
-                    info.put("link", (String) entry.get("link"));
-                    info.put("identifier", (String) entry.get("identifier"));
+
+                    SavableTrack info = new SavableTrack();
+
+                    info.setId((String) entry.get("_id"));
+                    info.setName((String) entry.get("name"));
+                    info.setArtist((String) entry.get("artist"));
+                    info.setLink((String) entry.get("link"));
+                    info.setIdentifier((String) entry.get("identifier"));
                     if(entry.get("user") != null) {
-                        info.put("user", (String) entry.get("user"));
+                        info.setUser((String) entry.get("user"));
                     }
                     favs.add(info);
                 }
                 break;
             }
         }
-        return favs;
+
+        return new Favourites(userId, favs);
     }
 
     @Override
