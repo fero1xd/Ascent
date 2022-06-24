@@ -26,6 +26,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 public class Ascent {
+
+    private JDA jda;
+
     private Ascent() throws LoginException {
         System.setProperty("http.agent", "Chrome");
         SpotifyAudioSourceManager instance = SpotifyAudioSourceManager.INSTANCE;
@@ -38,7 +41,9 @@ public class Ascent {
                         .setColor(0x3883d9)
         );
 
-        JDABuilder jda =  JDABuilder.createDefault(
+        LavalinkManager.INS.start(this);
+
+        JDABuilder jda = JDABuilder.createDefault(
                 AscentConfig.get("token"),
                 GatewayIntent.GUILD_MEMBERS,
                 GatewayIntent.GUILD_MESSAGES,
@@ -61,14 +66,20 @@ public class Ascent {
                 Waiter.instance.waiter
         );
 
-        JDA build = jda.build();
+        if(LavalinkManager.INS.isEnabled()) {
+            jda.setVoiceDispatchInterceptor(LavalinkManager.INS.getLavalink().getVoiceInterceptor());
+        }
 
-        LavalinkManager.INS.start(build);
+        this.jda = jda.build();
+
 
         YoutubeHttpContextFilter.setPAPISID(AscentConfig.get("papisid"));
         YoutubeHttpContextFilter.setPSID(AscentConfig.get("psid"));
     }
 
+    public JDA getJDA() {
+        return jda;
+    }
 
     public static void main(String[] args) throws LoginException {
         new Ascent();

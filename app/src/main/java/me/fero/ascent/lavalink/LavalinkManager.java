@@ -3,6 +3,7 @@ package me.fero.ascent.lavalink;
 import lavalink.client.io.Link;
 import lavalink.client.io.jda.JdaLavalink;
 import lavalink.client.player.LavalinkPlayer;
+import me.fero.ascent.Ascent;
 import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.objects.config.AscentConfig;
 import net.dv8tion.jda.api.JDA;
@@ -25,16 +26,16 @@ public class LavalinkManager {
     private LavalinkManager() {}
 
 
-    public void start(JDA jda) {
+    public void start(Ascent ascent) {
         this.manager = PlayerManager.getInstance();
-        this.config = AscentConfig.setupLavalinkNodes();
+        this.config = AscentConfig.getLavalinkNodes();
 
         if(!isEnabled()) {
             return;
         }
 
         String id = getIdFromToken(AscentConfig.get("token"));
-        lavalink = new JdaLavalink(id, 1, integer -> jda);
+        lavalink = new JdaLavalink(id, 1, integer -> ascent.getJDA());
 
         loadNodes();
     }

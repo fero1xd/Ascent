@@ -1,15 +1,16 @@
 package me.fero.ascent.commands.commands.music;
 
+
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.util.List;
 
@@ -23,15 +24,11 @@ public class Leave implements ICommand {
 
         final GuildVoiceState memberVoiceState = member.getVoiceState();
 
+        Guild guild = ctx.getGuild();
 
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
-
-        musicManager.scheduler.isRepeating = false;
-        musicManager.scheduler.queue.clear();
-        musicManager.scheduler.player.startTrack(null, false);
-
-        AudioManager audioManager = ctx.getGuild().getAudioManager();
-        audioManager.closeAudioConnection();
+        LavalinkPlayerManager.getInstance().removeGuildMusicManager(guild);
+        LavalinkManager.INS.closeConnection(guild);
+        guild.getAudioManager().setSendingHandler(null);
 
         String desc = "Disconnected from "+ memberVoiceState.getChannel().getAsMention();
         EmbedBuilder builder = Embeds.createBuilder("Disconnected", desc, "Requested by " + member.getEffectiveName(), member.getEffectiveAvatarUrl(), null);

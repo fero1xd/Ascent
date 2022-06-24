@@ -1,16 +1,17 @@
 package me.fero.ascent.commands.commands.music;
 
+import lavalink.client.io.Link;
+import me.fero.ascent.audio.GuildMusicManager;
+import me.fero.ascent.audio.TrackScheduler;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
 
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
-import me.fero.ascent.lavaplayer.TrackScheduler;
+import me.fero.ascent.lavalink.LavalinkManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,12 +32,17 @@ public class MusicCommand {
 
     @SuppressWarnings("ConstantConditions")
     public static void handleMusicCommands(CommandContext ctx, ICommand cmd) {
+        if (!LavalinkManager.INS.isEnabled()) {
+            // sendMsg(ctx, "The music feature is currently under maintenance.");
+            System.out.println("The music feature is currently under maintenance.");
+            return;
+        }
+
         final TextChannel channel = ctx.getChannel();
 
 
         final Member selfMember = ctx.getSelfMember();
 
-        GuildVoiceState selfVoiceState = selfMember.getVoiceState();
         final Member member =  ctx.getMember();
         final GuildVoiceState memberVoiceState = member.getVoiceState();
 
@@ -45,9 +51,10 @@ public class MusicCommand {
             return;
         }
 
+        Guild guild = ctx.getGuild();
         if(cmd.isDjNeeded()) {
             Role dj = member.getRoles().stream().filter((role) -> role.getName().equalsIgnoreCase("DJ")).findFirst().orElse(null);
-            boolean canInteract = ctx.getGuild().getSelfMember().canInteract(member);
+            boolean canInteract = guild.getSelfMember().canInteract(member);
             List<Member> collect = memberVoiceState.getChannel().getMembers().stream().filter((mem) -> !mem.getUser().isBot() && mem != member).collect(Collectors.toList());
 
             if(dj==null && canInteract && !collect.isEmpty()) {
@@ -56,13 +63,12 @@ public class MusicCommand {
             }
         }
 
-        AudioManager audioManager = ctx.getGuild().getAudioManager();
-        audioManager.setSelfDeafened(true);
+        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(guild);
+        TrackScheduler scheduler = musicManager.getScheduler();
 
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
-        TrackScheduler scheduler = musicManager.scheduler;
+        LavalinkManager manager = LavalinkManager.INS;
 
-        if(!selfVoiceState.inVoiceChannel()) {
+        if(!manager.isConnected(guild)) {
             if(cmd.getName().equalsIgnoreCase("leave")) {
                 EmbedBuilder builder = Embeds.alreadyConnectedToVcEmbed(member);
                 builder.setDescription("I am not connected to a voice channel");
@@ -81,7 +87,7 @@ public class MusicCommand {
                 }
 
                 if(memberChannel.getType() == ChannelType.STAGE) {
-                    StageChannel stageChannelById = ctx.getGuild().getStageChannelById(memberChannel.getId());
+                    StageChannel stageChannelById = guild.getStageChannelById(memberChannel.getId());
 
                     if(!stageChannelById.isModerator(ctx.getSelfMember())) {
                         channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "I do not have `manage channel` permission on this stage", null, null, null).build()).queue();
@@ -91,11 +97,12 @@ public class MusicCommand {
                     if(stageChannelById.getStageInstance() == null) {
                        stageChannelById.createStageInstance("Ascent Music").queue();
                     }
-                    ctx.getGuild().requestToSpeak();
+                    guild.requestToSpeak();
                 }
 
-                audioManager.openAudioConnection(memberChannel);
-                scheduler.setBindedChannel(ctx.getChannel());
+                manager.openConnection(memberChannel);
+
+                scheduler.bindedChannel = ctx.getChannel();
                 cmd.handle(ctx);
             }
             else {
@@ -106,7 +113,7 @@ public class MusicCommand {
             return;
         }
 
-        if (!memberVoiceState.getChannel().getId().equals(selfVoiceState.getChannel().getId())) {
+        if (!memberVoiceState.getChannel().getId().equals(manager.getConnectedChannel(guild).getId())) {
             channel.sendMessageEmbeds(Embeds.notInSameVcEmbed(member).setDescription("Already connected to a different channel").build()).queue();
             return;
         }
@@ -117,7 +124,7 @@ public class MusicCommand {
             }
         }
 
-        scheduler.setBindedChannel(ctx.getChannel());
+        scheduler.bindedChannel = ctx.getChannel();
         cmd.handle(ctx);
     }
 }

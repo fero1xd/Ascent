@@ -6,10 +6,11 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.duncte123.botcommons.messaging.EmbedUtils;
-import me.fero.ascent.Config;
+import me.fero.ascent.audio.GuildMusicManager;
+import me.fero.ascent.audio.TrackScheduler;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.listeners.BaseListener;
 import me.fero.ascent.commands.setup.CommandContext;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
 import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.objects.config.AscentConfig;
 import me.fero.ascent.utils.Embeds;
@@ -103,9 +104,10 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
             String query = "ytsearch:" + track.getName() + " " + track.getArtists()[0].getName();
 
-            GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
+            GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild());
+            TrackScheduler scheduler = musicManager.getScheduler();
 
-            PlayerManager.getInstance().audioPlayerManager.loadItemOrdered(musicManager, query, new AudioLoadResultHandler() {
+            LavalinkPlayerManager.getInstance().getPlayerManager().loadItemOrdered(musicManager, query, new AudioLoadResultHandler() {
                 @Override
                 public void trackLoaded(AudioTrack track) {
                     System.out.println("track loaded");
@@ -113,7 +115,6 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
                 @Override
                 public void playlistLoaded(AudioPlaylist playlist) {
-
                     boolean empty = playlist.getTracks().isEmpty();
                     if(empty) {
                         return;
@@ -121,9 +122,10 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
                     AudioTrack audioTrack = playlist.getTracks().get(0);
                     audioTrack.setUserData(ctx.getAuthor().getIdLong());
-                    musicManager.scheduler.queue(audioTrack);
 
-                    if(musicManager.scheduler.queue.size() > 0) {
+                    scheduler.addToQueue(audioTrack);
+
+                    if(scheduler.queue.size() > 0) {
                         ctx.getChannel().sendMessageEmbeds(Embeds.songEmbedWithoutDetails(audioTrack).setDescription("[" + audioTrack.getInfo().title + " - " + audioTrack.getInfo().author + "]" + "(" + track.getExternalUrls().get("spotify") + ")").build()).queue();
                     }
                 }
@@ -150,7 +152,8 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
             return;
         }
         try {
-            GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
+            GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild());
+            TrackScheduler scheduler = musicManager.getScheduler();
 
             final Playlist spotifyPlaylist = this.spi.getPlaylist(res.group(res.groupCount())).build().execute();
 
@@ -161,8 +164,8 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
             final int originalSize = playlistTracks.size();
 
-            if(originalSize > musicManager.scheduler.MAX_QUEUE_SIZE){
-                playlistTracks = playlistTracks.subList(0, musicManager.scheduler.MAX_QUEUE_SIZE);
+            if(originalSize > scheduler.MAX_QUEUE_SIZE){
+                playlistTracks = playlistTracks.subList(0, scheduler.MAX_QUEUE_SIZE);
             }
 
             final List<Track> finalPlaylist = new ArrayList<>();
@@ -182,10 +185,9 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
             ctx.getChannel().sendMessageEmbeds(Embeds.createBuilder(null, "Spotify Playlist Loaded - Adding **" + finalPlaylist.size() + "** Tracks to the queue", null, null, null).build()).queue();
             for(Track track : finalPlaylist) {
                 final String query = "ytsearch:" + track.getName() + " " + track.getArtists()[0].getName();
-                PlayerManager.getInstance().audioPlayerManager.loadItemOrdered(musicManager, query, new AudioLoadResultHandler() {
+                LavalinkPlayerManager.getInstance().getPlayerManager().loadItemOrdered(musicManager, query, new AudioLoadResultHandler() {
                     @Override
                     public void trackLoaded(AudioTrack track) {
-
                     }
 
                     @Override
@@ -198,18 +200,14 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                         AudioTrack audioTrack = playlist.getTracks().get(0);
                         audioTrack.setUserData(ctx.getAuthor().getIdLong());
 
-                        musicManager.scheduler.queue(audioTrack);
+                        scheduler.addToQueue(audioTrack);
                     }
 
                     @Override
-                    public void noMatches() {
-
-                    }
+                    public void noMatches() {}
 
                     @Override
-                    public void loadFailed(FriendlyException exception) {
-
-                    }
+                    public void loadFailed(FriendlyException exception) {}
                 });
             }
 
@@ -234,9 +232,11 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
             ctx.getChannel().sendMessageEmbeds(Embeds.createBuilder(null, "Spotify Album Loaded - Adding **" + items.length + "** Tracks to the queue", null, null, null).build()).queue();
 
             for(final TrackSimplified track : items) {
-                GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
+                GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild());
+                TrackScheduler scheduler = musicManager.getScheduler();
+
                 final String query = "ytsearch:" + track.getName() + " " + track.getArtists()[0].getName();
-                PlayerManager.getInstance().audioPlayerManager.loadItemOrdered(musicManager, query, new AudioLoadResultHandler() {
+                LavalinkPlayerManager.getInstance().getPlayerManager().loadItemOrdered(musicManager, query, new AudioLoadResultHandler() {
                     @Override
                     public void trackLoaded(AudioTrack track) {
 
@@ -252,18 +252,14 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                         AudioTrack audioTrack = playlist.getTracks().get(0);
                         audioTrack.setUserData(ctx.getAuthor().getIdLong());
 
-                        musicManager.scheduler.queue(audioTrack);
+                        scheduler.addToQueue(audioTrack);
                     }
 
                     @Override
-                    public void noMatches() {
-
-                    }
+                    public void noMatches() {}
 
                     @Override
-                    public void loadFailed(FriendlyException exception) {
-
-                    }
+                    public void loadFailed(FriendlyException exception) {}
                 });
             }
 
@@ -302,7 +298,8 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                 menu.addOption(track.getName(), String.valueOf(i), track.getArtists()[0].getName());
             }
 
-            GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
+            GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild());
+            TrackScheduler scheduler = musicManager.getScheduler();
             channel.sendMessageEmbeds(builder.build()).setActionRow(menu.build()).queue((message) -> {
                         waiter.waitForEvent(
                                 SelectionMenuEvent.class,
@@ -323,7 +320,7 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                                     final String sQuery = "ytsearch:" + q;
 
 
-                                    PlayerManager.getInstance().audioPlayerManager.loadItemOrdered(musicManager, sQuery, new AudioLoadResultHandler() {
+                                    LavalinkPlayerManager.getInstance().getPlayerManager().loadItemOrdered(musicManager, sQuery, new AudioLoadResultHandler() {
                                         @Override
                                         public void trackLoaded(AudioTrack track) {
 
@@ -338,9 +335,9 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                                             message.delete().queue();
 
                                             audioTrack.setUserData(ctx.getAuthor().getIdLong());
-                                            musicManager.scheduler.queue(audioTrack);
+                                            scheduler.addToQueue(audioTrack);
 
-                                            if(musicManager.scheduler.queue.size() > 0) {
+                                            if(scheduler.queue.size() > 0) {
                                                 channel.sendMessageEmbeds(Embeds.songEmbedWithoutDetails(audioTrack).build()).queue();
                                             }
                                         }
