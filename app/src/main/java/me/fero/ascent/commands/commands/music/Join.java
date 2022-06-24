@@ -1,18 +1,15 @@
 package me.fero.ascent.commands.commands.music;
 
-import me.duncte123.botcommons.messaging.EmbedUtils;
-import me.fero.ascent.commands.CommandContext;
-import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.commands.setup.CommandContext;
+import me.fero.ascent.commands.setup.ICommand;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 
-import java.awt.*;
 import java.util.List;
 
 @SuppressWarnings("ConstantConditions")

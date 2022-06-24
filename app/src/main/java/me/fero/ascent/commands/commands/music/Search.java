@@ -2,10 +2,11 @@ package me.fero.ascent.commands.commands.music;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.fero.ascent.Config;
-import me.fero.ascent.commands.CommandContext;
-import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.commands.setup.CommandContext;
+import me.fero.ascent.commands.setup.ICommand;
 import me.fero.ascent.lavaplayer.PlayerManager;
 
+import me.fero.ascent.objects.config.AscentConfig;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.entities.TextChannel;
 
@@ -22,7 +23,7 @@ public class Search implements ICommand {
     public void handle(CommandContext ctx) {
         final TextChannel channel = ctx.getChannel();
         if(ctx.getArgs().isEmpty()) {
-            channel.sendMessage("Correct usage is " + Config.get("prefix") + "play <youtube_link>/").queue();
+            channel.sendMessage("Correct usage is " + AscentConfig.get("prefix") + "play <youtube_link>/").queue();
             return;
         }
 

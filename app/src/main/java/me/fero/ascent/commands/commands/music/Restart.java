@@ -1,18 +1,14 @@
 package me.fero.ascent.commands.commands.music;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import me.fero.ascent.commands.CommandContext;
-import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.commands.setup.CommandContext;
+import me.fero.ascent.commands.setup.ICommand;
 import me.fero.ascent.lavaplayer.GuildMusicManager;
 import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.utils.Embeds;
-import net.dv8tion.jda.api.entities.GuildVoiceState;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Restart implements ICommand {
     @Override

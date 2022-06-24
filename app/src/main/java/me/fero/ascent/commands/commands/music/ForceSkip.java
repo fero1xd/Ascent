@@ -1,7 +1,7 @@
 package me.fero.ascent.commands.commands.music;
 
-import me.fero.ascent.commands.CommandContext;
-import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.commands.setup.CommandContext;
+import me.fero.ascent.commands.setup.ICommand;
 import me.fero.ascent.lavaplayer.GuildMusicManager;
 import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.utils.Embeds;

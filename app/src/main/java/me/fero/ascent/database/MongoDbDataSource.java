@@ -12,6 +12,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.fero.ascent.Config;
 import me.fero.ascent.entities.Favourites;
 import me.fero.ascent.entities.SavableTrack;
+import me.fero.ascent.objects.config.AscentConfig;
 import net.dv8tion.jda.api.entities.Guild;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -29,7 +30,7 @@ public class MongoDbDataSource implements DatabaseManager{
 
 
     public MongoDbDataSource() {
-        MongoClient client = MongoClients.create(Config.get("MONGO_URI"));
+        MongoClient client = MongoClients.create(AscentConfig.get("MONGO_URI"));
         this.db = client.getDatabase("ascent_bot");
         LOGGER.info("Connected to Mongo DB");
     }
@@ -45,11 +46,11 @@ public class MongoDbDataSource implements DatabaseManager{
 
         if(cursor == null) {
             Document newDoc = new Document("_id", guildId);
-            newDoc.append("prefix", Config.get("prefix"));
+            newDoc.append("prefix", AscentConfig.get("prefix"));
             newDoc.append("favourites", new BasicDBList());
 
             guild_settings.insertOne(newDoc);
-            return Config.get("prefix");
+            return AscentConfig.get("prefix");
         }
 
         return cursor.get("prefix").toString();

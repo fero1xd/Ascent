@@ -10,16 +10,16 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import me.duncte123.botcommons.messaging.EmbedUtils;
-import me.fero.ascent.Listener;
-import me.fero.ascent.commands.CommandContext;
+import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.spotify.SpotifyAudioSourceManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
-import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +28,7 @@ public class PlayerManager {
     private static PlayerManager instance;
     private final Map<Long, GuildMusicManager> musicManagers;
     public final AudioPlayerManager audioPlayerManager;
+    private static final Logger LOGGER = LoggerFactory.getLogger(PlayerManager.class);
 
 
     public PlayerManager() {
@@ -179,7 +180,7 @@ public class PlayerManager {
 
             @Override
             public void noMatches() {
-                Listener.LOGGER.error("No Tracks Found");
+                LOGGER.error("No Tracks Found");
 
                 EmbedBuilder builder = EmbedUtils.getDefaultEmbed();
                 builder.setTitle("Error!");

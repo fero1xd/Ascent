@@ -1,7 +1,6 @@
 package me.fero.ascent.database;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import me.fero.ascent.Listener;
 import me.fero.ascent.entities.Favourites;
 import me.fero.ascent.entities.GuildModel;
 
@@ -15,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class RedisDataStore {

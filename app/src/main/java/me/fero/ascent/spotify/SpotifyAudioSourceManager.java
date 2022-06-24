@@ -1,6 +1,6 @@
 package me.fero.ascent.spotify;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import me.fero.ascent.commands.CommandContext;
+import me.fero.ascent.commands.setup.CommandContext;
 
 
 public interface SpotifyAudioSourceManager {

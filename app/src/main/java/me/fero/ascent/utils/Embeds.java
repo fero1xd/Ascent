@@ -3,17 +3,16 @@ package me.fero.ascent.utils;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.duncte123.botcommons.messaging.EmbedUtils;
 import me.fero.ascent.Config;
+import me.fero.ascent.objects.config.AscentConfig;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.interactions.components.Button;
-import net.dv8tion.jda.api.utils.data.DataObject;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -200,7 +199,7 @@ public class Embeds {
         String title = "Ascent";
         String body  = "Thanks for adding ascent to your server..\nType " + prefix + "help for more info";
 
-        EmbedBuilder builder = Embeds.createBuilder(title, body, "Created by " + Config.get("DEV_NAME"), null, Color.RED).setThumbnail(jda.getEffectiveAvatarUrl());
+        EmbedBuilder builder = Embeds.createBuilder(title, body, "Created by " + AscentConfig.get("dev_name"), null, Color.RED).setThumbnail(jda.getEffectiveAvatarUrl());
         return builder;
     }
 }

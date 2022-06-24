@@ -1,8 +1,8 @@
 package me.fero.ascent.commands.commands.music;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import me.fero.ascent.commands.CommandContext;
-import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.commands.setup.CommandContext;
+import me.fero.ascent.commands.setup.ICommand;
 import me.fero.ascent.database.DatabaseManager;
 import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.entities.Favourites;

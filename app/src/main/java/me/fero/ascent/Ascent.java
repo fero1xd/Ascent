@@ -1,0 +1,76 @@
+
+package me.fero.ascent;
+
+
+import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeHttpContextFilter;
+import me.duncte123.botcommons.messaging.EmbedUtils;
+import me.fero.ascent.database.DatabaseManager;
+import me.fero.ascent.database.RedisDataStore;
+import me.fero.ascent.lavalink.LavalinkManager;
+import me.fero.ascent.listeners.BaseListener;
+import me.fero.ascent.listeners.BotListener;
+import me.fero.ascent.listeners.ButtonListener;
+import me.fero.ascent.listeners.GuildListener;
+import me.fero.ascent.objects.config.AscentConfig;
+import me.fero.ascent.spotify.SpotifyAudioSourceManager;
+import me.fero.ascent.utils.Waiter;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
+
+import javax.security.auth.login.LoginException;
+import java.util.EnumSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
+public class Ascent {
+    private Ascent() throws LoginException {
+        System.setProperty("http.agent", "Chrome");
+        SpotifyAudioSourceManager instance = SpotifyAudioSourceManager.INSTANCE;
+        DatabaseManager db = DatabaseManager.INSTANCE;
+        RedisDataStore.getInstance();
+
+
+        EmbedUtils.setEmbedBuilder(
+                () -> new EmbedBuilder()
+                        .setColor(0x3883d9)
+        );
+
+        JDABuilder jda =  JDABuilder.createDefault(
+                AscentConfig.get("token"),
+                GatewayIntent.GUILD_MEMBERS,
+                GatewayIntent.GUILD_MESSAGES,
+                GatewayIntent.GUILD_VOICE_STATES,
+                GatewayIntent.GUILD_MESSAGE_REACTIONS
+                );
+
+        jda.disableCache(EnumSet.of(
+                CacheFlag.CLIENT_STATUS,
+                CacheFlag.ACTIVITY,
+                CacheFlag.EMOTE
+        ));
+        jda.enableCache(CacheFlag.VOICE_STATE);
+
+        jda.addEventListeners(
+                new BaseListener(),
+                new BotListener(),
+                new GuildListener(),
+                new ButtonListener(),
+                Waiter.instance.waiter
+        );
+
+        JDA build = jda.build();
+
+        LavalinkManager.INS.start(build);
+
+        YoutubeHttpContextFilter.setPAPISID(AscentConfig.get("papisid"));
+        YoutubeHttpContextFilter.setPSID(AscentConfig.get("psid"));
+    }
+
+
+    public static void main(String[] args) throws LoginException {
+        new Ascent();
+    }
+}

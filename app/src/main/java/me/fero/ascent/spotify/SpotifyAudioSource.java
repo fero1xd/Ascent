@@ -7,10 +7,11 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.duncte123.botcommons.messaging.EmbedUtils;
 import me.fero.ascent.Config;
-import me.fero.ascent.Listener;
-import me.fero.ascent.commands.CommandContext;
+import me.fero.ascent.listeners.BaseListener;
+import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.lavaplayer.GuildMusicManager;
 import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.objects.config.AscentConfig;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -37,7 +38,7 @@ import java.util.regex.Pattern;
 
 public class SpotifyAudioSource implements SpotifyAudioSourceManager {
     private SpotifyApi spi = null;
-    private static final Logger LOGGER = LoggerFactory.getLogger(Listener.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseListener.class);
     private final ScheduledExecutorService service;
 
     //REGEX
@@ -59,8 +60,8 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
     public SpotifyAudioSource() {
         this.spi =  new SpotifyApi.Builder()
-                .setClientId(Config.get("spotify_client_id"))
-                .setClientSecret(Config.get("spotify_client_secret"))
+                .setClientId(AscentConfig.get("spotify_client_id"))
+                .setClientSecret(AscentConfig.get("spotify_client_secret"))
                 .build();
         this.service = Executors.newScheduledThreadPool(2, (r) -> new Thread(r, "Spotify-Token-Update-Thread"));
         service.scheduleAtFixedRate(this::updateAccessToken, 0, 1, TimeUnit.HOURS);

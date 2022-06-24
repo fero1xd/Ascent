@@ -1,16 +1,13 @@
 package me.fero.ascent.commands.commands.music;
 
-import me.fero.ascent.commands.CommandContext;
-import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.commands.setup.CommandContext;
+import me.fero.ascent.commands.setup.ICommand;
 import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.entities.Favourites;
 import me.fero.ascent.entities.SavableTrack;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
-
-import java.util.HashMap;
-import java.util.List;
 
 public class GetFav implements ICommand {
     @Override

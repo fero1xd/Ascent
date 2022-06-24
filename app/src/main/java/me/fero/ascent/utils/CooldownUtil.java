@@ -1,5 +1,5 @@
 package me.fero.ascent.utils;
-import me.fero.ascent.commands.ICommand;
+import me.fero.ascent.commands.setup.ICommand;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
