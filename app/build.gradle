@@ -4,7 +4,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '6.0.0'
 }
 
-mainClassName = 'me.fero.ascent.Bot'
+mainClassName = 'me.fero.ascent.Ascent'
 version '1.0'
 sourceCompatibility = 1.9
 

@@ -32,7 +32,6 @@ public class AscentConfig {
         }
     }
 
-
     public static Lavalink getLavalinkNodes() {
         String[] nodes = get("lavalink_nodes").split(",");
         final boolean lavalinkEnable = Boolean.parseBoolean(get("lavalink_enable"));

@@ -3,6 +3,7 @@ package me.fero.ascent.lavalink;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.bandcamp.BandcampAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.beam.BeamAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.http.HttpAudioSourceManager;
@@ -14,6 +15,7 @@ import me.fero.ascent.audio.AudioLoader;
 import me.fero.ascent.audio.GuildMusicManager;
 import me.fero.ascent.audio.TrackScheduler;
 import me.fero.ascent.commands.setup.CommandContext;
+import me.fero.ascent.spotify.SpotifyAudioSource;
 import me.fero.ascent.spotify.SpotifyAudioSourceManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.entities.Guild;
@@ -32,8 +34,11 @@ public class LavalinkPlayerManager {
         this.playerManager = new DefaultAudioPlayerManager();
         this.musicManagers = new HashMap<>();
 
-        playerManager.registerSourceManager(new YoutubeAudioSourceManager());
-        playerManager.registerSourceManager(SpotifyAudioSourceManager.INSTANCE);
+
+        SpotifyAudioSource sp = (SpotifyAudioSource) SpotifyAudioSourceManager.INSTANCE;
+
+        playerManager.registerSourceManager(sp.youtubeAudioSourceManager);
+        playerManager.registerSourceManager(sp);
 
         playerManager.registerSourceManager(SoundCloudAudioSourceManager.createDefault());
         playerManager.registerSourceManager(new BandcampAudioSourceManager());
