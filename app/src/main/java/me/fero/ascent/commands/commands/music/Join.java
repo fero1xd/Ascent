@@ -2,7 +2,6 @@ package me.fero.ascent.commands.commands.music;
 
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
-import me.fero.ascent.lavalink.LavalinkManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
@@ -21,9 +20,6 @@ public class Join implements ICommand {
 
         final Member member =  ctx.getMember();
         final GuildVoiceState memberVoiceState = member.getVoiceState();
-//
-//        AudioManager audioManager = ctx.getGuild().getAudioManager();
-//        audioManager.setSelfDeafened(true);
 
         final VoiceChannel memberChannel = memberVoiceState.getChannel();
 
@@ -34,12 +30,7 @@ public class Join implements ICommand {
         String footerUrl = member.getEffectiveAvatarUrl();
         EmbedBuilder builder = Embeds.createBuilder(title, description, footer, footerUrl, null);
 
-//        audioManager.openAudioConnection(memberChannel);
-
-
-        // LavalinkManager.INS.openConnection(memberChannel);
         channel.sendMessageEmbeds(builder.build()).queue();
-
     }
 
 

@@ -1,11 +1,11 @@
 package me.fero.ascent.commands.commands.music;
 
 import me.duncte123.botcommons.messaging.EmbedUtils;
+import me.fero.ascent.audio.GuildMusicManager;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
 import me.fero.ascent.database.RedisDataStore;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -39,11 +39,11 @@ public class BassBoost implements ICommand {
             sendCorrectUsage(channel, prefix);
         }
 
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(guild);
-        musicManager.scheduler.bassBoost(amount);
+        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(guild);
+        musicManager.getScheduler().bassBoost(amount);
 
         channel.sendMessageEmbeds(Embeds.createBuilder("Success!", "Changed bass boost value",
-                "NOTE - This feature is currently experimental", null, null).build()).queue();
+                "NOTE - This may take a while", null, null).build()).queue();
     }
 
     private void sendCorrectUsage(TextChannel channel, String prefix) {
@@ -70,5 +70,10 @@ public class BassBoost implements ICommand {
     @Override
     public String getUsage(String prefix) {
         return prefix + "bassboost <0-100>";
+    }
+
+    @Override
+    public String getType() {
+        return "music";
     }
 }

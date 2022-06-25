@@ -4,7 +4,7 @@ import me.duncte123.botcommons.messaging.EmbedUtils;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
 import me.fero.ascent.database.RedisDataStore;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 
@@ -37,10 +37,10 @@ public class Play implements ICommand {
         if (!isUrl(link)) {
             link = "ytsearch:" + link;
 
-            PlayerManager.getInstance().loadAndPlay(ctx, link, false, null);
+            LavalinkPlayerManager.getInstance().loadAndPlay(ctx, link, true);
         }
         else {
-            PlayerManager.getInstance().loadAndPlay(ctx, link, false, null);
+            LavalinkPlayerManager.getInstance().loadAndPlay(ctx, link, true);
         }
 
     }

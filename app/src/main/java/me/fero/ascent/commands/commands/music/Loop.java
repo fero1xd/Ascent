@@ -1,10 +1,11 @@
 package me.fero.ascent.commands.commands.music;
 
 import me.duncte123.botcommons.messaging.EmbedUtils;
+import me.fero.ascent.audio.GuildMusicManager;
+import me.fero.ascent.audio.TrackScheduler;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -25,7 +26,9 @@ public class Loop implements ICommand {
         Member member = !isInteraction ? ctx.getMember() : event.getMember();
         TextChannel channel = !isInteraction ? ctx.getChannel() : event.getTextChannel();
 
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(guild);
+        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(guild);
+        TrackScheduler scheduler = musicManager.getScheduler();
+
         List<String> args = !isInteraction ? ctx.getArgs() : List.of();
 
 
@@ -33,13 +36,13 @@ public class Loop implements ICommand {
         builder.setFooter("Requested by " + member.getEffectiveName(), member.getEffectiveAvatarUrl());
 
         if(!isInteraction && !args.isEmpty() && args.get(0).equalsIgnoreCase("status")) {
-            builder.setDescription("<:loop_ascent:989181126096601118> Loop is " + (musicManager.scheduler.isRepeating ? "Enabled" : "Disabled"));
+            builder.setDescription("<:loop_ascent:989181126096601118> Loop is " + (scheduler.isRepeating ? "Enabled" : "Disabled"));
             channel.sendMessageEmbeds(builder.build()).queue();
             return;
         }
 
-        final boolean newRepeating = !musicManager.scheduler.isRepeating;
-        musicManager.scheduler.isRepeating = newRepeating;
+        final boolean newRepeating = !scheduler.isRepeating;
+        scheduler.isRepeating = newRepeating;
 
         builder.setDescription("<:loop_ascent:989181126096601118> Loop is " + (newRepeating ? "Enabled" : "Disabled"));
 

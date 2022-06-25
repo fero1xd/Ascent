@@ -1,10 +1,10 @@
 package me.fero.ascent.commands.commands.music;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import lavalink.client.player.LavalinkPlayer;
+import me.fero.ascent.audio.GuildMusicManager;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
@@ -25,8 +25,8 @@ public class Resume implements ICommand {
         Guild guild = !isInteraction ? ctx.getGuild() : event.getGuild();
 
 
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(guild);
-        AudioPlayer audioPlayer = musicManager.audioPlayer;
+        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(guild);
+        LavalinkPlayer audioPlayer = musicManager.player;
 
         if(audioPlayer.getPlayingTrack() == null) {
             if(!isInteraction) {
@@ -38,8 +38,8 @@ public class Resume implements ICommand {
             return;
         }
 
-        AudioPlayer player = musicManager.scheduler.player;
-        if(!player.isPaused()) {
+
+        if(!audioPlayer.isPaused()) {
             if(!isInteraction) {
                 channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Player is already playing", null, null, null).build()).queue();
                 return;
@@ -55,12 +55,10 @@ public class Resume implements ICommand {
             EmbedBuilder b = new EmbedBuilder(embed);
             b.setFooter("Resumed by " + member.getEffectiveName(), member.getEffectiveAvatarUrl());
             List<Button> controls = Embeds.getControls(true);
-            // event.getMessage().editMessageEmbeds(b.build()).setActionRow(controls).queue();
-
             event.editMessageEmbeds(b.build()).setActionRow(controls).queue();
         }
 
-        player.setPaused(false);
+        audioPlayer.setPaused(false);
     }
 
 

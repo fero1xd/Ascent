@@ -1,9 +1,10 @@
 package me.fero.ascent.commands.commands.music;
 
+import me.fero.ascent.audio.GuildMusicManager;
+import me.fero.ascent.audio.TrackScheduler;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.entities.TextChannel;
 
@@ -11,14 +12,15 @@ public class RmDuplicates implements ICommand {
     @Override
     public void handle(CommandContext ctx) {
         TextChannel channel = ctx.getChannel();
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
+        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild());
+        TrackScheduler scheduler = musicManager.getScheduler();
 
-        if(musicManager.scheduler.queue.isEmpty()) {
+        if(scheduler.queue.isEmpty()) {
             channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Queue is currently empty", null, null, null).build()).queue();
             return;
         }
 
-        if(musicManager.scheduler.removeDuplicates()) {
+        if(scheduler.removeDuplicates()) {
             channel.sendMessageEmbeds(Embeds.createBuilder(null, "Removed duplicates from the queue.", null, null, null).build()).queue();
             return;
         }

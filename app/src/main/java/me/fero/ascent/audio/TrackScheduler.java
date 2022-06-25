@@ -9,6 +9,7 @@ import lavalink.client.player.LavalinkPlayer;
 import lavalink.client.player.event.AudioEventAdapterWrapped;
 import me.fero.ascent.exceptions.LimitReachedException;
 import me.fero.ascent.lavalink.LavalinkManager;
+import me.fero.ascent.spotify.SpotifyAudioTrack;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -29,7 +30,25 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
     public List<Member> votes = new ArrayList<>();
     public List<Member> totalMembers = new ArrayList<>();
     public Boolean votingGoingOn = false;
-    public int MAX_QUEUE_SIZE = 100;
+    public static int MAX_QUEUE_SIZE = 100;
+
+    private static final float[] BASS_BOOST = {
+            0.2f,
+            0.15f,
+            0.1f,
+            0.05f,
+            0.0f,
+            -0.05f,
+            -0.1f,
+            -0.1f,
+            -0.1f,
+            -0.1f,
+            -0.1f,
+            -0.1f,
+            -0.1f,
+            -0.1f,
+            -0.1f
+    };
 
     public TrackScheduler(LavalinkPlayer player, Guild guild) {
         this.player = player;
@@ -70,12 +89,15 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
         this.player.setPaused(false);
+
         deleteLastSongEmbed();
 
         if(this.bindedChannel != null && this.currentGuild != null) {
             Member member = this.currentGuild.retrieveMemberById((long) track.getUserData()).complete();
             this.bindedChannel.sendMessageEmbeds(Embeds.songEmbed(member, track).setTitle("Now Started Playing <a:music:989100325522796544>").build())
-                    .setActionRow(Embeds.getControls(true)).queue((msg) -> this.lastSongEmbed = msg);
+                    .setActionRow(Embeds.getControls(true)).queue((msg) -> {
+                        this.lastSongEmbed = msg;
+                    });
         }
     }
 
@@ -100,6 +122,8 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
 
             this.isRepeating = false;
             this.queue.clear();
+            this.resetVotingSystem();
+            this.deleteLastSongEmbed();
             this.player.stopTrack();
 
             LavalinkManager.INS.closeConnection(this.currentGuild);
@@ -109,6 +133,10 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
 
     // Helpers
     private void play(AudioTrack track) {
+        if(track instanceof SpotifyAudioTrack) {
+            track.getIdentifier();
+        }
+
         this.player.playTrack(track);
     }
 
@@ -116,9 +144,53 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
         if(this.lastSongEmbed != null) {
             try {
                 this.lastSongEmbed.delete().queue();
-            } catch (Exception ignored) {}
-
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             this.lastSongEmbed = null;
         }
+    }
+
+    public boolean removeDuplicates() {
+        if(queue.isEmpty() || queue.size() == 1) return false;
+
+        List<String> uniqueIdentifiers = new ArrayList<>();
+        List<AudioTrack> newQueue = new ArrayList<>();
+
+        for(AudioTrack track : queue) {
+            String identifier = track.getIdentifier();
+            if(!uniqueIdentifiers.contains(identifier)) {
+                uniqueIdentifiers.add(identifier);
+                newQueue.add(track);
+            }
+        }
+
+        boolean check = newQueue.size() != this.queue.size();
+
+        this.queue = newQueue;
+        return check;
+    }
+
+    public void bassBoost(float percentage)
+    {
+        final float multiplier = percentage / 100.00f;
+
+        for (int i = 0; i < BASS_BOOST.length; i++)
+        {
+            this.player.getFilters().setBand(i, BASS_BOOST[i] * multiplier).commit();
+        }
+    }
+
+    public void initializeVotingSystem(List<Member> totalMembers) {
+        votingGoingOn = true;
+        votes.clear();
+        totalMembers.clear();
+        this.totalMembers = totalMembers;
+    }
+
+    public void resetVotingSystem() {
+        votingGoingOn = false;
+        votes.clear();
+        totalMembers.clear();
     }
 }

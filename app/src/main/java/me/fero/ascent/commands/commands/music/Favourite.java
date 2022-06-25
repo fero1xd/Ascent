@@ -1,14 +1,14 @@
 package me.fero.ascent.commands.commands.music;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import me.fero.ascent.audio.GuildMusicManager;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
 import me.fero.ascent.database.DatabaseManager;
 import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.entities.Favourites;
 import me.fero.ascent.entities.SavableTrack;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -32,8 +32,10 @@ public class Favourite implements ICommand {
 
         TextChannel channel = !isInteraction ? ctx.getChannel() : null;
 
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(guild);
-        if(musicManager.scheduler.player.getPlayingTrack() == null) {
+        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(guild);
+
+
+        if(musicManager.player.getPlayingTrack() == null) {
             EmbedBuilder builder = Embeds.createBuilder("Error!", "No track playing", null,null, null);
             if (!isInteraction) {
                 channel.sendMessageEmbeds(builder.build()).queue();
@@ -43,7 +45,7 @@ public class Favourite implements ICommand {
             return;
         }
 
-        AudioTrack playingTrack = musicManager.scheduler.player.getPlayingTrack();
+        AudioTrack playingTrack = musicManager.player.getPlayingTrack();
 
         Favourites favourites = RedisDataStore.getInstance().getFavourites(guildId, userId);
 

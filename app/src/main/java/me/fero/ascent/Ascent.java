@@ -12,6 +12,7 @@ import me.fero.ascent.listeners.BotListener;
 import me.fero.ascent.listeners.ButtonListener;
 import me.fero.ascent.listeners.GuildListener;
 import me.fero.ascent.objects.config.AscentConfig;
+import me.fero.ascent.spotify.SpotifyAudioSource;
 import me.fero.ascent.spotify.SpotifyAudioSourceManager;
 import me.fero.ascent.utils.Waiter;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -22,16 +23,17 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 import javax.security.auth.login.LoginException;
 import java.util.EnumSet;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
+
 
 public class Ascent {
 
-    private JDA jda;
+    private final JDA jda;
+    private final SpotifyAudioSource sp;
 
     private Ascent() throws LoginException {
         System.setProperty("http.agent", "Chrome");
-        SpotifyAudioSourceManager instance = SpotifyAudioSourceManager.INSTANCE;
+        this.sp = (SpotifyAudioSource) SpotifyAudioSourceManager.INSTANCE;
+
         DatabaseManager db = DatabaseManager.INSTANCE;
         RedisDataStore.getInstance();
 
@@ -71,7 +73,6 @@ public class Ascent {
         }
 
         this.jda = jda.build();
-
 
         YoutubeHttpContextFilter.setPAPISID(AscentConfig.get("papisid"));
         YoutubeHttpContextFilter.setPSID(AscentConfig.get("psid"));

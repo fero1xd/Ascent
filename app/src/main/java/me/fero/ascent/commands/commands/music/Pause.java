@@ -1,10 +1,10 @@
 package me.fero.ascent.commands.commands.music;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import lavalink.client.player.LavalinkPlayer;
+import me.fero.ascent.audio.GuildMusicManager;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -27,9 +27,10 @@ public class Pause implements ICommand {
         Member member = !isInteraction ? ctx.getMember() : event.getMember();
         Guild guild = !isInteraction ? ctx.getGuild() : event.getGuild();
 
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(guild);
+        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(guild);
 
-        AudioPlayer audioPlayer = musicManager.audioPlayer;
+        LavalinkPlayer audioPlayer = musicManager.player;
+
         if(audioPlayer.getPlayingTrack() == null) {
             EmbedBuilder builder = Embeds.createBuilder("Error!", "No track playing", "Requested by " + member.getEffectiveName(), member.getEffectiveAvatarUrl(), null);
             if(!isInteraction) {
@@ -41,8 +42,7 @@ public class Pause implements ICommand {
             return;
         }
 
-        AudioPlayer player = musicManager.scheduler.player;
-        if(player.isPaused()) {
+        if(audioPlayer.isPaused()) {
             EmbedBuilder builder = Embeds.createBuilder("Error!", "Player is already paused", "Requested by " + member.getEffectiveName(), member.getEffectiveAvatarUrl(), null);
 
             if(!isInteraction) {
@@ -61,12 +61,11 @@ public class Pause implements ICommand {
             EmbedBuilder b = new EmbedBuilder(embed);
             b.setFooter("Paused by " + member.getEffectiveName(), member.getEffectiveAvatarUrl());
             List<Button> controls = Embeds.getControls(false);
-            //event.getMessage().editMessageEmbeds(b.build()).setActionRow(controls).queue();
 
             event.editMessageEmbeds(b.build()).setActionRow(controls).queue();
         }
 
-        player.setPaused(true);
+        audioPlayer.setPaused(true);
     }
 
 

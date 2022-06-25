@@ -1,9 +1,11 @@
 package me.fero.ascent.commands.commands.music;
 
+import lavalink.client.player.LavalinkPlayer;
+import me.fero.ascent.audio.GuildMusicManager;
+import me.fero.ascent.audio.TrackScheduler;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -24,9 +26,12 @@ public class ForceSkip implements ICommand {
         TextChannel channel = !isInteraction ? ctx.getChannel() : event.getTextChannel();
         Member member = !isInteraction ? ctx.getMember() : event.getMember();
         Guild guild = !isInteraction ? ctx.getGuild() : event.getGuild();
-        GuildMusicManager manager = PlayerManager.getInstance().getMusicManager(guild);
 
-        if(manager.audioPlayer.getPlayingTrack() == null) {
+        GuildMusicManager manager = LavalinkPlayerManager.getInstance().getMusicManager(guild);
+        TrackScheduler scheduler = manager.getScheduler();
+        LavalinkPlayer player = manager.player;
+
+        if(player.getPlayingTrack() == null) {
             EmbedBuilder builder = Embeds.createBuilder("Error!", "No track playing", null,null, null);
 
             if(!isInteraction) {
@@ -51,22 +56,17 @@ public class ForceSkip implements ICommand {
             return;
         }
 
-        if(manager.scheduler.votingGoingOn) {
-            manager.scheduler.totalMembers.clear();
-            manager.scheduler.votes.clear();
-            manager.scheduler.votingGoingOn = false;
+        if(scheduler.votingGoingOn) {
+            scheduler.totalMembers.clear();
+            scheduler.votes.clear();
+            scheduler.votingGoingOn = false;
         }
 
-        manager.scheduler.nextTrack();
+        scheduler.nextTrack();
 
         if(!isInteraction) {
             ctx.getMessage().addReaction("👍").queue();
         }
-//        else {
-//            try {
-//                event.getMessage().delete().queue();
-//            } catch (Exception ignored) {}
-//        }
     }
     @Override
     public String getName() {

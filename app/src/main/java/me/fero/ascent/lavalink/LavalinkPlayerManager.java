@@ -1,7 +1,6 @@
 package me.fero.ascent.lavalink;
 
 
-import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.bandcamp.BandcampAudioSourceManager;
@@ -11,17 +10,18 @@ import com.sedmelluq.discord.lavaplayer.source.soundcloud.SoundCloudAudioSourceM
 import com.sedmelluq.discord.lavaplayer.source.twitch.TwitchStreamAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.vimeo.VimeoAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import me.fero.ascent.audio.AudioLoader;
 import me.fero.ascent.audio.GuildMusicManager;
+import me.fero.ascent.audio.TrackScheduler;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.spotify.SpotifyAudioSourceManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.HashMap;
+import java.util.concurrent.Future;
 
 public class LavalinkPlayerManager {
     private static LavalinkPlayerManager instance;
@@ -32,8 +32,10 @@ public class LavalinkPlayerManager {
         this.playerManager = new DefaultAudioPlayerManager();
         this.musicManagers = new HashMap<>();
 
-        playerManager.registerSourceManager(SoundCloudAudioSourceManager.createDefault());
         playerManager.registerSourceManager(new YoutubeAudioSourceManager());
+        playerManager.registerSourceManager(SpotifyAudioSourceManager.INSTANCE);
+
+        playerManager.registerSourceManager(SoundCloudAudioSourceManager.createDefault());
         playerManager.registerSourceManager(new BandcampAudioSourceManager());
         playerManager.registerSourceManager(new VimeoAudioSourceManager());
         playerManager.registerSourceManager(new TwitchStreamAudioSourceManager());
@@ -63,21 +65,34 @@ public class LavalinkPlayerManager {
     }
 
 
-    public void loadAndPlay(CommandContext ctx, String query) {
+    public Future<Void> loadAndPlay(CommandContext ctx, String query, boolean announceTracks) {
         TextChannel channel = ctx.getChannel();
 
         GuildMusicManager musicManager = this.getMusicManager(channel.getGuild());
 
-        if(musicManager.getScheduler().queue.size() >= musicManager.getScheduler().MAX_QUEUE_SIZE) {
+        if(musicManager.getScheduler().queue.size() >= TrackScheduler.MAX_QUEUE_SIZE) {
             channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Max queue size reached", null, null, null).build()).queue();
-            return;
+            return null;
         }
 
-        if(SpotifyAudioSourceManager.INSTANCE.loadItem(ctx, query)) {
-            return;
+        AudioLoader loader = new AudioLoader(ctx, musicManager, query, announceTracks);
+
+        return getPlayerManager().loadItemOrdered(musicManager, query, loader);
+    }
+
+    public Future<Void> loadAndPlay(CommandContext ctx, String query, Message messageToDelete, boolean announceTracks) {
+        TextChannel channel = ctx.getChannel();
+
+        GuildMusicManager musicManager = this.getMusicManager(channel.getGuild());
+
+        if(musicManager.getScheduler().queue.size() >= TrackScheduler.MAX_QUEUE_SIZE) {
+            channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Max queue size reached", null, null, null).build()).queue();
+            return null;
         }
 
-        // TODO: SEARCH AND QUEUE YEYEYEYEYEYYEYEY ::)
+        AudioLoader loader = new AudioLoader(ctx, musicManager, query, messageToDelete, announceTracks);
+
+        return getPlayerManager().loadItemOrdered(musicManager, query, loader);
     }
 
     public static LavalinkPlayerManager getInstance() {

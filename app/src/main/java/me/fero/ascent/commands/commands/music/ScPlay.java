@@ -4,7 +4,7 @@ import me.duncte123.botcommons.messaging.EmbedUtils;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
 import me.fero.ascent.database.RedisDataStore;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -40,7 +40,7 @@ public class ScPlay implements ICommand {
 
         link = "scsearch:" + link;
 
-        PlayerManager.getInstance().loadAndPlay(ctx, link, false, null);
+        LavalinkPlayerManager.getInstance().loadAndPlay(ctx, link, true);
     }
 
     @Override

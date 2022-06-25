@@ -1,16 +1,12 @@
 package me.fero.ascent.commands.commands.music;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
 import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.entities.Favourites;
 import me.fero.ascent.entities.SavableTrack;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.entities.TextChannel;
 
@@ -35,26 +31,10 @@ public class LoadFav implements ICommand {
             urls.add(track.getLink());
         }
 
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
-
         channel.sendMessageEmbeds(Embeds.createBuilder(null, "Loading " + ctx.getMember().getEffectiveName() + "'s favourite tracks", null, null, null).build()).queue();
+
         for(String url : urls) {
-            PlayerManager.getInstance().audioPlayerManager.loadItemOrdered(musicManager, url, new AudioLoadResultHandler() {
-                @Override
-                public void trackLoaded(AudioTrack track) {
-                    track.setUserData(ctx.getAuthor().getIdLong());
-                    musicManager.scheduler.queue(track);
-                }
-
-                @Override
-                public void playlistLoaded(AudioPlaylist playlist) {}
-
-                @Override
-                public void noMatches() {}
-
-                @Override
-                public void loadFailed(FriendlyException exception) {}
-            });
+            LavalinkPlayerManager.getInstance().loadAndPlay(ctx, url, false);
         }
     }
 

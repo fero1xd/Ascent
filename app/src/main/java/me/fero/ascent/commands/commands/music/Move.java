@@ -3,7 +3,7 @@ package me.fero.ascent.commands.commands.music;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.entities.TextChannel;
 
@@ -21,7 +21,7 @@ public class Move implements ICommand {
 
         }
 
-        List<AudioTrack> queue = PlayerManager.getInstance().getMusicManager(ctx.getGuild()).scheduler.queue;
+        List<AudioTrack> queue = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild()).getScheduler().queue;
 
         if(queue.isEmpty()) {
             channel.sendMessageEmbeds(Embeds.queueIsEmptyEmbed().build()).queue();

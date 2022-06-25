@@ -1,15 +1,16 @@
 package me.fero.ascent.listeners;
 
+import me.fero.ascent.audio.GuildMusicManager;
+import me.fero.ascent.audio.TrackScheduler;
 import me.fero.ascent.commands.setup.CommandManager;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.api.managers.AudioManager;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,8 +43,6 @@ public class GuildListener extends BaseListener {
 
         String raw = event.getMessage().getContentRaw();
 
-
-
         User selfUser = event.getGuild().getSelfMember().getUser();
         String mention = "<@" + selfUser.getId() + ">";
 
@@ -63,8 +62,7 @@ public class GuildListener extends BaseListener {
         if(defaultChannel !=null) {
             defaultChannel.sendMessageEmbeds(Embeds.introEmbed(event.getGuild().getSelfMember(), redis.getPrefix(event.getGuild().getIdLong())).build()).queue();
         }
-        PlayerManager.getInstance().getMusicManager(event.getGuild());
-        LOGGER.info("Joined " + event.getGuild().getName() + " guild Adding the music manager");
+        LOGGER.info("Joined " + event.getGuild().getName());
         this.jda.getPresence().setActivity(Activity.listening("help in " + event.getJDA().getGuilds().size() + " Guilds"));
     }
 
@@ -74,22 +72,10 @@ public class GuildListener extends BaseListener {
 
         Member selfMember = event.getGuild().getSelfMember();
         if(selfMember.getVoiceState().inVoiceChannel()) {
-            GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(event.getGuild());
-
-            musicManager.scheduler.isRepeating = false;
-            musicManager.scheduler.queue.clear();
-            musicManager.scheduler.player.stopTrack();
-
-            // **RESET EVERYTHING**
-            musicManager.scheduler.totalMembers.clear();
-            musicManager.scheduler.votes.clear();
-            musicManager.scheduler.votingGoingOn = false;
-
-            AudioManager audioManager = event.getGuild().getAudioManager();
-            audioManager.closeAudioConnection();
+            LavalinkManager.INS.closeConnection(event.getGuild());
         }
 
-        PlayerManager.getInstance().removeGuildMusicManager(event.getGuild());
+        LavalinkPlayerManager.getInstance().removeGuildMusicManager(event.getGuild());
 
         LOGGER.info("Left " + event.getGuild().getName() + " guild Deleting the music manager");
     }
@@ -97,7 +83,8 @@ public class GuildListener extends BaseListener {
     @Override
     public void onGuildVoiceUpdate(@NotNull GuildVoiceUpdateEvent event) {
 
-        if(event.getMember().getUser() != event.getGuild().getSelfMember().getUser()) {
+        Guild guild = event.getGuild();
+        if(event.getMember().getUser() != guild.getSelfMember().getUser()) {
             VoiceChannel channelLeft = event.getChannelLeft();
             if(channelLeft == null) {
                 return;
@@ -109,37 +96,29 @@ public class GuildListener extends BaseListener {
 
             boolean canClose = false;
             for(Member member : members) {
-                if(member.getUser() != event.getGuild().getSelfMember().getUser()) {
+                if(member.getUser() != guild.getSelfMember().getUser()) {
                     copy.add(member);
                 }
                 else {
                     canClose = true;
                 }
             }
-            GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(event.getGuild());
 
-            if(canClose && !copy.isEmpty() && musicManager.scheduler.votingGoingOn){
-                musicManager.scheduler.totalMembers = copy;
+            GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(guild);
+            TrackScheduler scheduler = musicManager.getScheduler();
+
+            if(canClose && !copy.isEmpty() && scheduler.votingGoingOn){
+                scheduler.totalMembers = copy;
             }
 
             if(copy.isEmpty() && canClose) {
-                musicManager.scheduler.isRepeating = false;
-                musicManager.scheduler.queue.clear();
-                musicManager.scheduler.player.stopTrack();
-                musicManager.scheduler.deleteLastSongEmbed();
-
-                // **RESET EVERYTHING**
-                musicManager.scheduler.totalMembers.clear();
-                musicManager.scheduler.votes.clear();
-                musicManager.scheduler.votingGoingOn = false;
-
-
-                AudioManager audioManager = event.getGuild().getAudioManager();
-                audioManager.closeAudioConnection();
+                scheduler.deleteLastSongEmbed();
+                LavalinkManager.INS.closeConnection(guild);
+                LavalinkPlayerManager.getInstance().removeGuildMusicManager(guild);
+                guild.getAudioManager().setSendingHandler(null);
             }
-
         }
-        else if(event.getMember().getUser() == event.getGuild().getSelfMember().getUser()){
+        else if(event.getMember().getUser() == guild.getSelfMember().getUser()){
             if(event.getChannelLeft() != null && event.getChannelJoined() != null) {
                 VoiceChannel channelJoined = event.getChannelJoined();
 
@@ -149,46 +128,37 @@ public class GuildListener extends BaseListener {
 
                 boolean canClose = false;
                 for(Member member : members) {
-                    if(member.getUser() != event.getGuild().getSelfMember().getUser()) {
+                    if(member.getUser() != guild.getSelfMember().getUser()) {
                         copy.add(member);
                     }
                     else {
                         canClose = true;
                     }
                 }
-                GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(event.getGuild());
+                GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(guild);
+                TrackScheduler scheduler = musicManager.getScheduler();
 
                 // **RESET EVERYTHING**
-                musicManager.scheduler.totalMembers.clear();
-                musicManager.scheduler.votes.clear();
-                musicManager.scheduler.votingGoingOn = false;
+                scheduler.resetVotingSystem();
 
                 if(copy.isEmpty() && canClose) {
+                    scheduler.deleteLastSongEmbed();
 
-                    musicManager.scheduler.isRepeating = false;
-                    musicManager.scheduler.queue.clear();
-                    musicManager.scheduler.player.stopTrack();
-                    musicManager.scheduler.deleteLastSongEmbed();
-
-                    AudioManager audioManager = event.getGuild().getAudioManager();
-                    audioManager.closeAudioConnection();
-
+                    LavalinkManager.INS.closeConnection(guild);
+                    LavalinkPlayerManager.getInstance().removeGuildMusicManager(guild);
+                    guild.getAudioManager().setSendingHandler(null);
                 }
             }
-            else if(event.getChannelLeft() != null && event.getChannelJoined() == null){
+            else if(event.getChannelLeft() != null && event.getChannelJoined() == null) {
+                GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(guild);
+                TrackScheduler scheduler = musicManager.getScheduler();
 
-                GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(event.getGuild());
+                scheduler.deleteLastSongEmbed();
 
-                musicManager.scheduler.isRepeating = false;
-                musicManager.scheduler.queue.clear();
-                musicManager.scheduler.player.stopTrack();
-                musicManager.scheduler.deleteLastSongEmbed();
+                LavalinkManager.INS.closeConnection(guild);
 
-                // **RESET EVERYTHING**
-                musicManager.scheduler.totalMembers.clear();
-                musicManager.scheduler.votes.clear();
-                musicManager.scheduler.votingGoingOn = false;
-
+                LavalinkPlayerManager.getInstance().removeGuildMusicManager(guild);
+                guild.getAudioManager().setSendingHandler(null);
             }
         }
     }

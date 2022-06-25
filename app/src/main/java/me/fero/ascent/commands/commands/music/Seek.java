@@ -1,10 +1,10 @@
 package me.fero.ascent.commands.commands.music;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import lavalink.client.player.LavalinkPlayer;
+import me.fero.ascent.audio.GuildMusicManager;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -17,8 +17,8 @@ public class Seek implements ICommand {
         final TextChannel channel = ctx.getChannel();
 
 
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
-        AudioPlayer audioPlayer = musicManager.scheduler.player;
+        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild());
+        LavalinkPlayer audioPlayer = musicManager.player;
 
         if(ctx.getArgs().isEmpty()) {
             EmbedBuilder builder = Embeds.createBuilder("Error!", "Right format is MM:SS", null, null, null);
@@ -29,6 +29,12 @@ public class Seek implements ICommand {
 
         if(audioPlayer.getPlayingTrack() == null) {
             EmbedBuilder builder = Embeds.createBuilder("Error!", "No track playing", null, null, null);
+            channel.sendMessageEmbeds(builder.build()).queue();
+            return;
+        }
+
+        if(!audioPlayer.getPlayingTrack().isSeekable()) {
+            EmbedBuilder builder = Embeds.createBuilder("Error!", "This track is not seekable", null, null, null);
             channel.sendMessageEmbeds(builder.build()).queue();
             return;
         }
@@ -63,12 +69,9 @@ public class Seek implements ICommand {
         }
 
         audioPlayer.setPaused(false);
-        audioPlayer.getPlayingTrack().setPosition(secs * 1000);
+        audioPlayer.seekTo(secs * 1000);
 
-        EmbedBuilder builder = Embeds.createBuilder(null, "Sought", null, null, null);
-
-        channel.sendMessageEmbeds(builder.build()).queue();
-
+        ctx.getMessage().addReaction("👍").queue();
     }
 
     @Override

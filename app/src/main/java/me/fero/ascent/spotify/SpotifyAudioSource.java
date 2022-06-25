@@ -2,16 +2,17 @@ package me.fero.ascent.spotify;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
+import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.sedmelluq.discord.lavaplayer.track.*;
 import me.duncte123.botcommons.messaging.EmbedUtils;
-import me.fero.ascent.audio.GuildMusicManager;
+import me.fero.ascent.audio.AudioTrackInfoWithImage;
 import me.fero.ascent.audio.TrackScheduler;
 import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.listeners.BaseListener;
 import me.fero.ascent.commands.setup.CommandContext;
-import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.objects.config.AscentConfig;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -29,6 +30,8 @@ import se.michaelthelin.spotify.model_objects.specification.*;
 import se.michaelthelin.spotify.requests.authorization.client_credentials.ClientCredentialsRequest;
 import se.michaelthelin.spotify.requests.data.tracks.GetTrackRequest;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +40,7 @@ import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SpotifyAudioSource implements SpotifyAudioSourceManager {
+public class SpotifyAudioSource implements AudioSourceManager, SpotifyAudioSourceManager {
     private SpotifyApi spi = null;
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseListener.class);
     private final ScheduledExecutorService service;
@@ -58,8 +61,10 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
     private static final Pattern SPOTIFY_PLAYLIST_REGEX_USER = Pattern.compile("^(" + SPOTIFY_BASE_REGEX + ")" +
             USER_PART + PLAYLIST_REGEX + REST_REGEX + "$");
     private static final Pattern SPOTIFY_SECOND_PLAYLIST_REGEX = Pattern.compile("^spotify(?::user:.*)?:playlist:(.*)$");
+    public final YoutubeAudioSourceManager youtubeAudioSourceManager;
 
-    public SpotifyAudioSource() {
+    public SpotifyAudioSource(YoutubeAudioSourceManager youtubeAudioSourceManager) {
+        this.youtubeAudioSourceManager = youtubeAudioSourceManager;
         this.spi =  new SpotifyApi.Builder()
                 .setClientId(AscentConfig.get("spotify_client_id"))
                 .setClientSecret(AscentConfig.get("spotify_client_secret"))
@@ -70,105 +75,59 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
 
     @Override
-    public boolean loadItem(CommandContext ctx, String url) {
+    public AudioItem loadItem(AudioPlayerManager manager, AudioReference ref) {
+        AudioItem item = getTrack(ref);
 
-        if(SPOTIFY_TRACK_REGEX.matcher(url).matches()) {
-            this.getTrack(ctx, url);
-            return true;
-        }
-        else if(SPOTIFY_PLAYLIST_REGEX.matcher(url).matches()) {
-            this.getPlaylist(ctx, url);
-            return true;
-        }
-        else if(SPOTIFY_ALBUM_REGEX.matcher(url).matches()) {
-            this.getAlbum(ctx, url);
-            return true;
+        if (item == null) {
+            item = getPlaylist(ref);
         }
 
-        return false;
+        if (item == null) {
+            item = getAlbum(ref);
+        }
+
+        return item;
     }
 
-    public void getTrack(CommandContext ctx, String url) {
+    public AudioItem getTrack(AudioReference reference) {
 
-        final Matcher res = SPOTIFY_TRACK_REGEX.matcher(url);
+        final Matcher res = SPOTIFY_TRACK_REGEX.matcher(reference.identifier);
         if(!res.matches()) {
-            return;
+            return null;
         }
         try {
             GetTrackRequest request = this.spi.getTrack(res.group(res.groupCount())).build();
             Track track = request.execute();
 
-
-            LOGGER.info("Name: "+ track.getName());
-            LOGGER.info("Artist: " + track.getArtists()[0].getName());
-
-            String query = "ytsearch:" + track.getName() + " " + track.getArtists()[0].getName();
-
-            GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild());
-            TrackScheduler scheduler = musicManager.getScheduler();
-
-            LavalinkPlayerManager.getInstance().getPlayerManager().loadItemOrdered(musicManager, query, new AudioLoadResultHandler() {
-                @Override
-                public void trackLoaded(AudioTrack track) {
-                    System.out.println("track loaded");
-                }
-
-                @Override
-                public void playlistLoaded(AudioPlaylist playlist) {
-                    boolean empty = playlist.getTracks().isEmpty();
-                    if(empty) {
-                        return;
-                    }
-
-                    AudioTrack audioTrack = playlist.getTracks().get(0);
-                    audioTrack.setUserData(ctx.getAuthor().getIdLong());
-
-                    scheduler.addToQueue(audioTrack);
-
-                    if(scheduler.queue.size() > 0) {
-                        ctx.getChannel().sendMessageEmbeds(Embeds.songEmbedWithoutDetails(audioTrack).setDescription("[" + audioTrack.getInfo().title + " - " + audioTrack.getInfo().author + "]" + "(" + track.getExternalUrls().get("spotify") + ")").build()).queue();
-                    }
-                }
-
-                @Override
-                public void noMatches() {
-                }
-
-                @Override
-                public void loadFailed(FriendlyException exception) {
-
-                }
-            });
-
+            return buildTrack(track);
         }
          catch (IOException | SpotifyWebApiException | ParseException e) {
             e.printStackTrace();
          }
+
+        return null;
     }
 
-    public void getPlaylist(CommandContext ctx, String url) {
-        final Matcher res = SPOTIFY_PLAYLIST_REGEX.matcher(url);
+    public AudioItem getPlaylist(AudioReference reference) {
+        final Matcher res = SPOTIFY_PLAYLIST_REGEX.matcher(reference.identifier);
         if(!res.matches()) {
-            return;
+            return null;
         }
         try {
-            GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild());
-            TrackScheduler scheduler = musicManager.getScheduler();
 
             final Playlist spotifyPlaylist = this.spi.getPlaylist(res.group(res.groupCount())).build().execute();
 
             List<PlaylistTrack> playlistTracks = List.of(spotifyPlaylist.getTracks().getItems());
             if(playlistTracks.isEmpty()) {
-                return;
+                return null;
             }
 
             final int originalSize = playlistTracks.size();
-
-            if(originalSize > scheduler.MAX_QUEUE_SIZE){
-                playlistTracks = playlistTracks.subList(0, scheduler.MAX_QUEUE_SIZE);
+            if(originalSize > TrackScheduler.MAX_QUEUE_SIZE) {
+                playlistTracks = playlistTracks.subList(0, TrackScheduler.MAX_QUEUE_SIZE);
             }
 
-            final List<Track> finalPlaylist = new ArrayList<>();
+            final List<AudioTrack> finalPlaylist = new ArrayList<>();
 
             for(final PlaylistTrack playlistTrack  : playlistTracks) {
                 if (playlistTrack.getIsLocal()) {
@@ -178,49 +137,27 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                 final IPlaylistItem item = playlistTrack.getTrack();
                 if(item instanceof Track) {
                     Track track = (Track) item;
-                    finalPlaylist.add(track);
+                    finalPlaylist.add(buildTrack(track));
                 }
             }
 
-            ctx.getChannel().sendMessageEmbeds(Embeds.createBuilder(null, "Spotify Playlist Loaded - Adding **" + finalPlaylist.size() + "** Tracks to the queue", null, null, null).build()).queue();
-            for(Track track : finalPlaylist) {
-                final String query = "ytsearch:" + track.getName() + " " + track.getArtists()[0].getName();
-                LavalinkPlayerManager.getInstance().getPlayerManager().loadItemOrdered(musicManager, query, new AudioLoadResultHandler() {
-                    @Override
-                    public void trackLoaded(AudioTrack track) {
-                    }
-
-                    @Override
-                    public void playlistLoaded(AudioPlaylist playlist) {
-                        boolean empty = playlist.getTracks().isEmpty();
-                        if(empty) {
-                            return;
-                        }
-
-                        AudioTrack audioTrack = playlist.getTracks().get(0);
-                        audioTrack.setUserData(ctx.getAuthor().getIdLong());
-
-                        scheduler.addToQueue(audioTrack);
-                    }
-
-                    @Override
-                    public void noMatches() {}
-
-                    @Override
-                    public void loadFailed(FriendlyException exception) {}
-                });
+            if (finalPlaylist.isEmpty()) {
+                throw new FriendlyException("This playlist does not contain playable tracks (podcasts cannot be played)", FriendlyException.Severity.COMMON, null);
             }
 
+            return new SpotifyPlaylist(spotifyPlaylist.getName(), finalPlaylist, null, false, originalSize);
         }
         catch (IOException | SpotifyWebApiException | ParseException e) {
             e.printStackTrace();
         }
+
+        return null;
     }
 
-    public void getAlbum(CommandContext ctx, String url) {
-        final Matcher res = SPOTIFY_ALBUM_REGEX.matcher(url);
+    public AudioItem getAlbum(AudioReference reference) {
+        final Matcher res = SPOTIFY_ALBUM_REGEX.matcher(reference.identifier);
         if(!res.matches()) {
-            return;
+            return null;
         }
 
         try {
@@ -228,48 +165,21 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
             final Album album = albumFuture.get();
             TrackSimplified[] items = album.getTracks().getItems();
-
-            ctx.getChannel().sendMessageEmbeds(Embeds.createBuilder(null, "Spotify Album Loaded - Adding **" + items.length + "** Tracks to the queue", null, null, null).build()).queue();
+            Image[] images = album.getImages();
+            final List<AudioTrack> playList = new ArrayList<>();
 
             for(final TrackSimplified track : items) {
-                GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild());
-                TrackScheduler scheduler = musicManager.getScheduler();
-
-                final String query = "ytsearch:" + track.getName() + " " + track.getArtists()[0].getName();
-                LavalinkPlayerManager.getInstance().getPlayerManager().loadItemOrdered(musicManager, query, new AudioLoadResultHandler() {
-                    @Override
-                    public void trackLoaded(AudioTrack track) {
-
-                    }
-
-                    @Override
-                    public void playlistLoaded(AudioPlaylist playlist) {
-                        boolean empty = playlist.getTracks().isEmpty();
-                        if(empty) {
-                            return;
-                        }
-
-                        AudioTrack audioTrack = playlist.getTracks().get(0);
-                        audioTrack.setUserData(ctx.getAuthor().getIdLong());
-
-                        scheduler.addToQueue(audioTrack);
-                    }
-
-                    @Override
-                    public void noMatches() {}
-
-                    @Override
-                    public void loadFailed(FriendlyException exception) {}
-                });
+                playList.add(buildTrackFromSimple(track, images));
             }
 
-
+            return new BasicAudioPlaylist(album.getName(), playList, null, false);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-    }
 
+        return null;
+    }
 
     @Override
     public void searchTrack(CommandContext ctx, String query, EventWaiter waiter) {
@@ -295,11 +205,9 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
 
             for (int i = 0; i <  trackCount; i++) {
                 final Track track = items[i];
-                menu.addOption(track.getName(), String.valueOf(i), track.getArtists()[0].getName());
+                menu.addOption(track.getName(), track.getId(), track.getArtists()[0].getName());
             }
 
-            GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild());
-            TrackScheduler scheduler = musicManager.getScheduler();
             channel.sendMessageEmbeds(builder.build()).setActionRow(menu.build()).queue((message) -> {
                         waiter.waitForEvent(
                                 SelectionMenuEvent.class,
@@ -314,44 +222,8 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                                     return true;
                                 },
                                 (e) -> {
-                                    int index = Integer.parseInt(e.getValues().get(0));
-                                    Track track = items[index];
-                                    String q = track.getName() + " " + track.getArtists()[0].getName();
-                                    final String sQuery = "ytsearch:" + q;
-
-
-                                    LavalinkPlayerManager.getInstance().getPlayerManager().loadItemOrdered(musicManager, sQuery, new AudioLoadResultHandler() {
-                                        @Override
-                                        public void trackLoaded(AudioTrack track) {
-
-                                        }
-
-                                        @Override
-                                        public void playlistLoaded(AudioPlaylist playlist) {
-                                            List<AudioTrack> tracks = playlist.getTracks();
-                                            if(tracks.isEmpty()) return;
-
-                                            AudioTrack audioTrack = tracks.get(0);
-                                            message.delete().queue();
-
-                                            audioTrack.setUserData(ctx.getAuthor().getIdLong());
-                                            scheduler.addToQueue(audioTrack);
-
-                                            if(scheduler.queue.size() > 0) {
-                                                channel.sendMessageEmbeds(Embeds.songEmbedWithoutDetails(audioTrack).build()).queue();
-                                            }
-                                        }
-
-                                        @Override
-                                        public void noMatches() {
-
-                                        }
-
-                                        @Override
-                                        public void loadFailed(FriendlyException exception) {
-
-                                        }
-                                    });
+                                    String uri = "https://open.spotify.com/track/" + e.getValues().get(0) ;
+                                    LavalinkPlayerManager.getInstance().loadAndPlay(ctx, uri, message, true);
                             },
                     15, TimeUnit.SECONDS,
                     () -> {
@@ -359,7 +231,6 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
                     }
                 );
             });
-
         }catch (Exception e) {
             e.printStackTrace();
         }
@@ -379,5 +250,73 @@ public class SpotifyAudioSource implements SpotifyAudioSourceManager {
         }catch (IOException | SpotifyWebApiException | ParseException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public String getSourceName() {
+        return "spotify";
+    }
+
+
+    @Override
+    public boolean isTrackEncodable(AudioTrack track) {
+        return true;
+    }
+
+    @Override
+    public void encodeTrack(AudioTrack track, DataOutput output) throws IOException {
+
+    }
+
+    @Override
+    public AudioTrack decodeTrack(AudioTrackInfo trackInfo, DataInput input) {
+        return new SpotifyAudioTrack(trackInfo, AscentConfig.get("yt_key"), this);
+    }
+
+    @Override
+    public void shutdown() {
+        if(this.service != null) {
+            this.service.shutdown();
+        }
+    }
+
+    private AudioTrack buildTrackFromSimple(TrackSimplified track, Image[] images) {
+        return new SpotifyAudioTrack(
+                new AudioTrackInfoWithImage(
+                        track.getName(),
+                        track.getArtists()[0].getName(),
+                        track.getDurationMs(),
+                        track.getId(),
+                        false,
+                        track.getExternalUrls().get("spotify"),
+                        getImageOrDefault(images)
+                ),
+                AscentConfig.get("yt_key"),
+                this
+        );
+    }
+
+    private AudioTrack buildTrack(Track track) {
+        return new SpotifyAudioTrack(
+                new AudioTrackInfoWithImage(
+                        track.getName(),
+                        track.getArtists()[0].getName(),
+                        track.getDurationMs(),
+                        track.getId(),
+                        false,
+                        track.getExternalUrls().get("spotify"),
+                        getImageOrDefault(track.getAlbum().getImages())
+                ),
+                AscentConfig.get("yt_key"),
+                this
+        );
+    }
+
+    private String getImageOrDefault(Image[] images) {
+        if (images.length > 0) {
+            return images[0].getUrl();
+        }
+
+        return "https://dunctebot.com/img/favicon.png";
     }
 }

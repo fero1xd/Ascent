@@ -1,6 +1,5 @@
 package me.fero.ascent.commands.commands.music;
 
-import lavalink.client.io.Link;
 import me.fero.ascent.audio.GuildMusicManager;
 import me.fero.ascent.audio.TrackScheduler;
 import me.fero.ascent.commands.setup.CommandContext;
@@ -33,8 +32,7 @@ public class MusicCommand {
     @SuppressWarnings("ConstantConditions")
     public static void handleMusicCommands(CommandContext ctx, ICommand cmd) {
         if (!LavalinkManager.INS.isEnabled()) {
-            // sendMsg(ctx, "The music feature is currently under maintenance.");
-            System.out.println("The music feature is currently under maintenance.");
+             ctx.getChannel().sendMessageEmbeds(Embeds.createBuilder("Error!", "The music feature is currently under maintenance.", null, null, null).build()).queue();
             return;
         }
 

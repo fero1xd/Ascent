@@ -1,11 +1,12 @@
 package me.fero.ascent.commands.commands.music;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import lavalink.client.player.LavalinkPlayer;
+import me.fero.ascent.audio.GuildMusicManager;
+import me.fero.ascent.audio.TrackScheduler;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -32,8 +33,9 @@ public class Skip implements ICommand {
         VoiceChannel vc = ctx.getSelfMember().getVoiceState().getChannel();
 
 
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
-        AudioPlayer audioPlayer = musicManager.audioPlayer;
+        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild());
+        LavalinkPlayer audioPlayer = musicManager.player;
+        TrackScheduler scheduler = musicManager.getScheduler();
 
         if(audioPlayer.getPlayingTrack() == null) {
             EmbedBuilder builder = Embeds.createBuilder("Error!", "No track playing", null,null, null);
@@ -41,7 +43,7 @@ public class Skip implements ICommand {
             return;
         }
 
-        if(musicManager.scheduler.votingGoingOn) {
+        if(scheduler.votingGoingOn) {
             EmbedBuilder builder = Embeds.createBuilder(null, "A voting is going on already. Please be patient !", null,null, null);
             channel.sendMessageEmbeds(builder.build()).queue();
             return;
@@ -51,10 +53,7 @@ public class Skip implements ICommand {
         List<Member> filteredMembers = vc.getMembers().stream().filter(member -> !member.getUser().isBot()).collect(Collectors.toList());
 
         if(filteredMembers.size() >= 3) {
-            musicManager.scheduler.votingGoingOn = true;
-            musicManager.scheduler.votes.clear();
-            musicManager.scheduler.totalMembers.clear();
-            musicManager.scheduler.totalMembers = filteredMembers;
+            scheduler.initializeVotingSystem(filteredMembers);
 
             String unicode = "U+1F44D";
             channel.sendMessageEmbeds(Embeds.createBuilder("Voting starts now",
@@ -66,7 +65,10 @@ public class Skip implements ICommand {
                         this.waiter.waitForEvent(
                                 GuildMessageReactionAddEvent.class,
                                 (e) -> {
-                                    if(e.getMember().getUser().isBot() || !e.getReactionEmote().isEmoji() || !e.getReactionEmote().getEmoji().equalsIgnoreCase("\uD83D\uDC4D") || !e.getMessageId().equals(message.getId())) return false;
+                                    if(e.getMember().getUser().isBot() ||
+                                            !e.getReactionEmote().isEmoji() ||
+                                            !e.getReactionEmote().getEmoji().equalsIgnoreCase("\uD83D\uDC4D") ||
+                                            !e.getMessageId().equals(message.getId())) return false;
 
                                     if (!e.getGuild().getSelfMember().getVoiceState().inVoiceChannel()) {
                                         message.removeReaction(unicode).queue();
@@ -84,48 +86,39 @@ public class Skip implements ICommand {
 
                                         return false;
                                     }
-                                    if (musicManager.scheduler.votingGoingOn) {
-                                        if (musicManager.scheduler.votes.contains(e.getMember())) {
+                                    if (scheduler.votingGoingOn) {
+                                        if (scheduler.votes.contains(e.getMember())) {
                                             e.getReaction().removeReaction().queue();
                                             return false;
                                         }
 
-                                        if(!musicManager.scheduler.totalMembers.contains(e.getMember())) {
-                                            musicManager.scheduler.totalMembers.add(e.getMember());
+                                        if(!scheduler.totalMembers.contains(e.getMember())) {
+                                            scheduler.totalMembers.add(e.getMember());
                                         }
-                                        musicManager.scheduler.votes.add(e.getMember());
+                                        scheduler.votes.add(e.getMember());
 
-                                        return musicManager.scheduler.votes.size() >= Math.ceil(musicManager.scheduler.totalMembers.size() / 2f);
+                                        return scheduler.votes.size() >= Math.ceil(scheduler.totalMembers.size() / 2f);
                                     }
 
                                     return false;
                                 },
                                 (e) -> {
-                                    if(musicManager.scheduler.votes.size() >= Math.ceil(musicManager.scheduler.totalMembers.size() / 2f)) {
+                                    if(scheduler.votes.size() >= Math.ceil(scheduler.totalMembers.size() / 2f)) {
 
-                                        musicManager.scheduler.totalMembers.clear();
-                                        musicManager.scheduler.votes.clear();
-                                        musicManager.scheduler.votingGoingOn = false;
+                                        scheduler.resetVotingSystem();
 
                                         // Skip the song
-                                        musicManager.scheduler.nextTrack();
+                                        scheduler.nextTrack();
                                         message.delete().queue();
 
                                         ctx.getMessage().addReaction("👍").queue();
-
-//                                        EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
-//                                        channel.sendMessageEmbeds(builder.build()).queue();
-
                                     }
 
                                 },
                                 20, TimeUnit.SECONDS,
                                 () -> {
-                                    if(musicManager.scheduler.votingGoingOn) {
-                                        musicManager.scheduler.totalMembers.clear();
-                                        musicManager.scheduler.votes.clear();
-                                        musicManager.scheduler.votingGoingOn = false;
-
+                                    if(scheduler.votingGoingOn) {
+                                        scheduler.resetVotingSystem();
                                         message.delete().queue();
                                         channel.sendMessageEmbeds(Embeds.createBuilder(null, "Voting did not come to an end . Try again next time..", null, null, null).build()).queue();
                                     }
@@ -150,32 +143,27 @@ public class Skip implements ICommand {
                                     if (!e.getMember().getVoiceState().getChannel().getId().equalsIgnoreCase(e.getGuild().getSelfMember().getVoiceState().getChannel().getId())) {
                                         return false;
                                     }
-                                    if (musicManager.scheduler.votingGoingOn) {
-                                        if (musicManager.scheduler.votes.contains(e.getMember())) {
-                                            musicManager.scheduler.votes = musicManager.scheduler.votes.stream().filter((vote) -> !vote.getId().equals(e.getMember().getId())).collect(Collectors.toList());
+                                    if (scheduler.votingGoingOn) {
+                                        if (scheduler.votes.contains(e.getMember())) {
+                                            scheduler.votes = scheduler.votes.stream().filter((vote) -> !vote.getId().equals(e.getMember().getId())).collect(Collectors.toList());
 
                                             return false;
                                         }
 
-                                        return musicManager.scheduler.votes.size() >= Math.ceil(musicManager.scheduler.totalMembers.size() / 2f);
+                                        return scheduler.votes.size() >= Math.ceil(scheduler.totalMembers.size() / 2f);
                                     }
 
                                     return false;
                                 },
                                 (e) -> {
-                                    if(musicManager.scheduler.votes.size() >= Math.ceil(musicManager.scheduler.totalMembers.size() / 2f)) {
+                                    if(scheduler.votes.size() >= Math.ceil(scheduler.totalMembers.size() / 2f)) {
 
-                                        musicManager.scheduler.totalMembers.clear();
-                                        musicManager.scheduler.votes.clear();
-                                        musicManager.scheduler.votingGoingOn = false;
+                                        scheduler.resetVotingSystem();
 
                                         // Skip the song
-                                        musicManager.scheduler.nextTrack();
+                                        scheduler.nextTrack();
                                         message.delete().queue();
                                         ctx.getMessage().addReaction("👍").queue();
-
-//                                        EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
-//                                        channel.sendMessageEmbeds(builder.build()).queue();
                                     }
 
                                 },
@@ -188,10 +176,7 @@ public class Skip implements ICommand {
             return;
         }
 
-        musicManager.scheduler.nextTrack();
-//        EmbedBuilder builder = Embeds.createBuilder(null, "Skipped the current track", null, null, null);
-//        channel.sendMessageEmbeds(builder.build()).queue();
-
+        scheduler.nextTrack();
         ctx.getMessage().addReaction("👍").queue();
     }
 

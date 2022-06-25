@@ -1,8 +1,10 @@
 package me.fero.ascent.commands.commands.music;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
+import me.fero.ascent.spotify.SpotifyAudioSource;
 import me.fero.ascent.spotify.SpotifyAudioSourceManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -38,7 +40,8 @@ public class Spotify implements ICommand {
             return;
         }
 
-        SpotifyAudioSourceManager.INSTANCE.searchTrack(ctx, q, this.waiter);
+        SpotifyAudioSource instance = (SpotifyAudioSource) SpotifyAudioSourceManager.INSTANCE;
+        instance.searchTrack(ctx, q, waiter);
     }
 
     @Override

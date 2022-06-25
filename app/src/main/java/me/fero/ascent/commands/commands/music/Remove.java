@@ -3,10 +3,10 @@ package me.fero.ascent.commands.commands.music;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
+import me.fero.ascent.audio.GuildMusicManager;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -24,13 +24,16 @@ public class Remove implements ICommand {
     public Remove(EventWaiter waiter){
         this.waiter = waiter;
     }
+
     @Override
     public void handle(CommandContext ctx) {
         final TextChannel channel = ctx.getChannel();
         Guild guild = ctx.getGuild();
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(guild);
+        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(guild);
 
-        List<AudioTrack> queue = musicManager.scheduler.queue;
+
+        List<AudioTrack> queue = musicManager.getScheduler().queue;
+
         if(queue.isEmpty()) {
             channel.sendMessageEmbeds(Embeds.queueIsEmptyEmbed().build()).queue();
             return;

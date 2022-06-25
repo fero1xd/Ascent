@@ -1,10 +1,10 @@
 package me.fero.ascent.commands.commands.music;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import lavalink.client.player.LavalinkPlayer;
+import me.fero.ascent.audio.GuildMusicManager;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -18,8 +18,8 @@ public class Volume implements ICommand {
         final TextChannel channel = ctx.getChannel();
         List<String> args = ctx.getArgs();
 
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
-        AudioPlayer audioPlayer = musicManager.scheduler.player;
+        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild());
+        LavalinkPlayer audioPlayer = musicManager.player;
 
         if(args.isEmpty()) {
             int result = audioPlayer.getVolume();
@@ -43,8 +43,10 @@ public class Volume implements ICommand {
             return;
         }
 
-        audioPlayer.setVolume(amount);
-        EmbedBuilder builder = Embeds.createBuilder(null, "Volume changed", null, null, null);
+        audioPlayer.getFilters().setVolume(amount / 100F).commit();
+
+
+        EmbedBuilder builder = Embeds.createBuilder(null, "Volume changed", "NOTE - This may take a while", null, null);
         channel.sendMessageEmbeds(builder.build()).queue();
     }
 

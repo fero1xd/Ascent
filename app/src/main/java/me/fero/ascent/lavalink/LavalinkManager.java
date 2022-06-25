@@ -4,9 +4,7 @@ import lavalink.client.io.Link;
 import lavalink.client.io.jda.JdaLavalink;
 import lavalink.client.player.LavalinkPlayer;
 import me.fero.ascent.Ascent;
-import me.fero.ascent.lavaplayer.PlayerManager;
 import me.fero.ascent.objects.config.AscentConfig;
-import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
@@ -19,7 +17,7 @@ import java.util.Base64;
 public class LavalinkManager {
     public static LavalinkManager INS = new LavalinkManager();
     private JdaLavalink lavalink = null;
-    private PlayerManager manager;
+    private LavalinkPlayerManager manager;
     private boolean enabledOverride = true;
     private AscentConfig.Lavalink config;
 
@@ -27,7 +25,7 @@ public class LavalinkManager {
 
 
     public void start(Ascent ascent) {
-        this.manager = PlayerManager.getInstance();
+        this.manager = LavalinkPlayerManager.getInstance();
         this.config = AscentConfig.getLavalinkNodes();
 
         if(!isEnabled()) {

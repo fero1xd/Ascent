@@ -26,9 +26,9 @@ public class Leave implements ICommand {
 
         Guild guild = ctx.getGuild();
 
-        LavalinkPlayerManager.getInstance().removeGuildMusicManager(guild);
+//        LavalinkPlayerManager.getInstance().removeGuildMusicManager(guild);
         LavalinkManager.INS.closeConnection(guild);
-        guild.getAudioManager().setSendingHandler(null);
+
 
         String desc = "Disconnected from "+ memberVoiceState.getChannel().getAsMention();
         EmbedBuilder builder = Embeds.createBuilder("Disconnected", desc, "Requested by " + member.getEffectiveName(), member.getEffectiveAvatarUrl(), null);
@@ -43,8 +43,6 @@ public class Leave implements ICommand {
     public String getHelp() {
         return "Leaves the current vc";
     }
-
-
 
     @Override
     public List<String> getAliases() {

@@ -1,10 +1,11 @@
 package me.fero.ascent.commands.commands.music;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import me.fero.ascent.audio.GuildMusicManager;
+import me.fero.ascent.audio.TrackScheduler;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 
@@ -19,14 +20,17 @@ public class Shuffle implements ICommand {
         final TextChannel channel = ctx.getChannel();
 
 
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
-        List<AudioTrack> queue = musicManager.scheduler.queue;
+        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild());
+
+        TrackScheduler scheduler = musicManager.getScheduler();
+        List<AudioTrack> queue = scheduler.queue;
+
         if(queue.isEmpty()) {
             channel.sendMessageEmbeds(Embeds.queueIsEmptyEmbed().build()).queue();
             return;
         }
 
-        Collections.shuffle(musicManager.scheduler.queue);
+        Collections.shuffle(scheduler.queue);
         EmbedBuilder builder = Embeds.createBuilder(null, "Queue shuffled", null, null, null);
         channel.sendMessageEmbeds(builder.build()).queue();
     }

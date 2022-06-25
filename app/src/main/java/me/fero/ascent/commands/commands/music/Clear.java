@@ -1,13 +1,13 @@
 package me.fero.ascent.commands.commands.music;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import me.fero.ascent.audio.GuildMusicManager;
+import me.fero.ascent.audio.TrackScheduler;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
-import me.fero.ascent.lavaplayer.GuildMusicManager;
-import me.fero.ascent.lavaplayer.PlayerManager;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.List;
@@ -17,18 +17,17 @@ public class Clear implements ICommand {
     public void handle(CommandContext ctx) {
         final TextChannel channel = ctx.getChannel();
 
-        final Member member =  ctx.getMember();
+        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(ctx.getGuild());
+        TrackScheduler scheduler = musicManager.getScheduler();
 
-
-        GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(ctx.getGuild());
-        final List<AudioTrack> queue = musicManager.scheduler.queue;
+        final List<AudioTrack> queue = scheduler.queue;
 
         if (queue.isEmpty()) {
             channel.sendMessageEmbeds(Embeds.queueIsEmptyEmbed().build()).queue();
             return;
         }
 
-        musicManager.scheduler.queue.clear();
+        scheduler.queue.clear();
 
         EmbedBuilder builder = Embeds.createBuilder(null, "💥 The queue has been cleared", null, null, null);
         channel.sendMessageEmbeds(builder.build()).queue();
