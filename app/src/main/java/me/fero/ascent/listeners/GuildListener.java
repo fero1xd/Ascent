@@ -1,5 +1,6 @@
 package me.fero.ascent.listeners;
 
+import me.fero.ascent.Ascent;
 import me.fero.ascent.audio.GuildMusicManager;
 import me.fero.ascent.audio.TrackScheduler;
 import me.fero.ascent.commands.setup.CommandManager;
@@ -63,12 +64,13 @@ public class GuildListener extends BaseListener {
             defaultChannel.sendMessageEmbeds(Embeds.introEmbed(event.getGuild().getSelfMember(), redis.getPrefix(event.getGuild().getIdLong())).build()).queue();
         }
         LOGGER.info("Joined " + event.getGuild().getName());
-        this.jda.getPresence().setActivity(Activity.listening("help in " + event.getJDA().getGuilds().size() + " Guilds"));
+        jda.getPresence().setActivity(Activity.listening("help in " + event.getJDA().getGuilds().size() + " Guilds"));
     }
 
     @Override
     public void onGuildLeave(@NotNull GuildLeaveEvent event) {
-        this.jda.getPresence().setActivity(Activity.listening("help on " + event.getJDA().getGuilds().size() + " Guilds"));
+        jda.getPresence().setActivity(Activity.listening("help on " + event.getJDA().getGuilds().size() + " Guilds"));
+
 
         Member selfMember = event.getGuild().getSelfMember();
         if(selfMember.getVoiceState().inVoiceChannel()) {

@@ -6,6 +6,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 
 public class BaseListener extends ListenerAdapter {
-    protected JDA jda;
+    protected static JDA jda;
     protected final RedisDataStore redis = RedisDataStore.getInstance();
 }

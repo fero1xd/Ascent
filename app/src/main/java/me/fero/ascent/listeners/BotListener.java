@@ -22,21 +22,21 @@ public class BotListener extends BaseListener {
     public void onReady(@Nonnull ReadyEvent event) {
         LOGGER.info("{} is ready", event.getJDA().getSelfUser().getAsTag());
 
-        this.jda = event.getJDA();
+        jda = event.getJDA();
 
         this.service = Executors.newScheduledThreadPool(1, (r) -> new Thread(r, "Status-Update-Thread"));
 
         service.scheduleAtFixedRate(() -> {
             if(turn) {
-                List<Guild> guilds = this.jda.getGuilds();
+                List<Guild> guilds = jda.getGuilds();
                 long amount = 0;
                 for(Guild guild : guilds) {
                     amount += guild.getMemberCount();
                 }
-                this.jda.getPresence().setActivity(Activity.playing("music for " + amount + " members"));
+                jda.getPresence().setActivity(Activity.playing("music for " + amount + " members"));
             }
             else {
-                this.jda.getPresence().setActivity(Activity.listening("help in " + event.getGuildTotalCount() + " Guilds"));
+                jda.getPresence().setActivity(Activity.listening("help in " + event.getGuildTotalCount() + " Guilds"));
             }
 
             turn = !turn;

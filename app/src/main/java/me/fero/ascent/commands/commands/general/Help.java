@@ -84,5 +84,4 @@ public class Help extends BaseCommand {
 
         channel.sendMessageEmbeds(builder.build()).queue();
     }
-
 }
