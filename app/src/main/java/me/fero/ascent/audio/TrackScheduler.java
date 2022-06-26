@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import lavalink.client.io.filters.*;
 import lavalink.client.player.LavalinkPlayer;
 import lavalink.client.player.event.AudioEventAdapterWrapped;
 import me.fero.ascent.exceptions.LimitReachedException;
@@ -31,6 +32,10 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
     public List<Member> totalMembers = new ArrayList<>();
     public Boolean votingGoingOn = false;
     public static int MAX_QUEUE_SIZE = 100;
+    private static float threedAmount = 0.2F;
+
+    public boolean karaokeMode = false;
+    public boolean threedMode = false;
 
     private static final float[] BASS_BOOST = {
             0.2f,
@@ -53,6 +58,8 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
     public TrackScheduler(LavalinkPlayer player, Guild guild) {
         this.player = player;
         this.currentGuild = guild;
+
+        this.player.getFilters().setTimescale(new Timescale()).commit();
     }
 
     public boolean canQueue() {
@@ -171,16 +178,6 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
         return check;
     }
 
-    public void bassBoost(float percentage)
-    {
-        final float multiplier = percentage / 100.00f;
-
-        for (int i = 0; i < BASS_BOOST.length; i++)
-        {
-            this.player.getFilters().setBand(i, BASS_BOOST[i] * multiplier).commit();
-        }
-    }
-
     public void initializeVotingSystem(List<Member> totalMembers) {
         votingGoingOn = true;
         votes.clear();
@@ -192,5 +189,60 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
         votingGoingOn = false;
         votes.clear();
         totalMembers.clear();
+    }
+
+    // FILTERS
+    public void bassBoost(float percentage)
+    {
+        final float multiplier = percentage / 100.00f;
+
+        for (int i = 0; i < BASS_BOOST.length; i++)
+        {
+            this.player.getFilters().setBand(i, BASS_BOOST[i] * multiplier).commit();
+        }
+    }
+
+    public void setSpeed(float percentage) {
+        Filters filters = this.player.getFilters();
+        Timescale timescale = filters.getTimescale();
+
+
+        filters.setTimescale(timescale.setSpeed(percentage)).commit();
+    }
+
+    public void setPitch(float percentage) {
+        Filters filters = this.player.getFilters();
+        Timescale timescale = filters.getTimescale();
+
+
+        filters.setTimescale(timescale.setPitch(percentage)).commit();
+    }
+
+    public void toggleRotation() {
+        Filters filters = this.player.getFilters();
+        Rotation rotation = filters.getRotation();
+
+        if(rotation != null) {
+            filters.setRotation(null).commit();
+            threedMode = false;
+        }
+        else {
+            filters.setRotation(new Rotation().setFrequency(0.2F)).commit();
+            threedMode = true;
+        }
+    }
+
+    public void toggleKaraoke() {
+        Filters filters = this.player.getFilters();
+        lavalink.client.io.filters.Karaoke karaoke = filters.getKaraoke();
+
+        if(karaoke != null) {
+            filters.setKaraoke(null).commit();
+            karaokeMode = false;
+        }
+        else {
+            filters.setKaraoke(new Karaoke()).commit();
+            karaokeMode = true;
+        }
     }
 }

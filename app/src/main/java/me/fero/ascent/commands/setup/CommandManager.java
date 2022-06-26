@@ -1,8 +1,7 @@
 package me.fero.ascent.commands.setup;
 
 import me.fero.ascent.commands.commands.general.*;
-import me.fero.ascent.commands.setup.CommandContext;
-import me.fero.ascent.commands.setup.ICommand;
+import me.fero.ascent.commands.commands.music.filters.*;
 import me.fero.ascent.commands.commands.music.*;
 import me.fero.ascent.commands.commands.music.Queue;
 import me.fero.ascent.database.RedisDataStore;
@@ -25,6 +24,7 @@ public class CommandManager {
         addCommand(new Help(this));
         addCommand(new Join());
         addCommand(new Play());
+        addCommand(new YtmPlay());
         addCommand(new Stop());
         addCommand(new Skip(Waiter.getInstance().waiter));
         addCommand(new NowPlaying());
@@ -58,8 +58,15 @@ public class CommandManager {
         addCommand(new Banner());
         addCommand(new Ignore());
         addCommand(new Vote());
-        addCommand(new BassBoost());
+
         addCommand(new DevLogs());
+
+        // Filters
+        addCommand(new BassBoost());
+        addCommand(new Speed());
+        addCommand(new Pitch());
+        addCommand(new ThreeD());
+        addCommand(new Karaoke());
     }
 
     private void addCommand(ICommand cmd) {

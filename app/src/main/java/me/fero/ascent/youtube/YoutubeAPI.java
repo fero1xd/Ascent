@@ -45,4 +45,16 @@ public class YoutubeAPI {
                 .execute()
                 .getItems();
     }
+
+    public static List<SearchResult> searchByCategory(String query, String apiKey, String categoryId, long size) throws IOException {
+       return youtube.search()
+               .list("snippet")
+               .setKey(apiKey)
+               .setType("video")
+               .setMaxResults(size)
+               .setFields("items(id/kind,id/videoId,snippet/title, snippet/channelTitle)")
+               .setVideoCategoryId("categoryId")
+               .execute()
+               .getItems();
+    }
 }

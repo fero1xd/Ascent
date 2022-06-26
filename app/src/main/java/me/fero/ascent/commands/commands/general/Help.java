@@ -1,7 +1,6 @@
 package me.fero.ascent.commands.commands.general;
 
 import me.fero.ascent.commands.setup.CommandManager;
-import me.fero.ascent.Config;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.commands.setup.ICommand;
 import me.fero.ascent.database.RedisDataStore;
@@ -9,6 +8,7 @@ import me.fero.ascent.objects.BaseCommand;
 import me.fero.ascent.objects.config.AscentConfig;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.interactions.components.Button;
 
@@ -31,30 +31,26 @@ public class Help extends BaseCommand {
         TextChannel channel = ctx.getChannel();
         String prefix = RedisDataStore.getInstance().getPrefix(ctx.getGuild().getIdLong());
 
+        Member member = ctx.getMember();
         if(args.isEmpty()) {
             StringBuilder musicBuilder = new StringBuilder();
             StringBuilder generalBuilder = new StringBuilder();
-            StringBuilder moderatorBuilder = new StringBuilder();
 
 
             for(ICommand cmd : manager.getCommands().values()) {
                 if(cmd.getType().equalsIgnoreCase("music")) {
-                    musicBuilder.append("`").append(prefix).append(cmd.getName()).append("` ").append(cmd.getHelp()).append("\n");
-                }
-                else if(cmd.getType().equalsIgnoreCase("moderator")) {
-                    moderatorBuilder.append("`").append(prefix).append(cmd.getName()).append("` ").append(cmd.getHelp()).append("\n");
+                    musicBuilder.append("`").append(cmd.getName()).append("` ");
                 }
                 else {
-                    generalBuilder.append("`").append(prefix).append(cmd.getName()).append("` ").append(cmd.getHelp()).append("\n");
+                    generalBuilder.append("`").append(cmd.getName()).append("` ");
 
                 }
             }
 
-            EmbedBuilder builder1 = Embeds.helpEmbed(ctx.getMember());
+            EmbedBuilder builder1 = Embeds.helpEmbed(member);
 
             builder1.setDescription("Use "  + prefix + "help <cmd_name> for more help");
             builder1.addField("General 🧬", generalBuilder.toString(), false);
-//            builder1.addField("Moderator 📳", moderatorBuilder.toString(), false);
             builder1.addField("Music 📯", musicBuilder.toString(), false);
             channel.sendMessageEmbeds(builder1.build()).setActionRow(
                     Button.link("https://discord.gg/Z42RjgxQ", "Join the support server"),
@@ -66,17 +62,27 @@ public class Help extends BaseCommand {
 
         String search = args.get(0);
         ICommand command = manager.getCommand(search);
+
         if(command == null) {
             channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Nothing found", null, null, Color.RED).build()).queue();
             return;
         }
 
+
+        String name = command.getName();
+
+
+        EmbedBuilder builder = Embeds.createBuilder(name.substring(0, 1).toUpperCase() + name.substring(1), null, "Requested by " + member.getEffectiveName(), member.getEffectiveAvatarUrl(), null);
+
+        if(command.getHelp() != null) {
+            builder.addField("Info", command.getHelp(), false);
+        }
+
         if(command.getUsage(prefix) != null) {
-            channel.sendMessageEmbeds(Embeds.createBuilder(null, command.getUsage(prefix), null, null, null).build()).queue();
+            builder.addField("Usage", command.getUsage(prefix), false);
         }
-        else {
-            channel.sendMessageEmbeds(Embeds.createBuilder(null, command.getHelp(), null, null, null).build()).queue();
-        }
+
+        channel.sendMessageEmbeds(builder.build()).queue();
     }
 
 }

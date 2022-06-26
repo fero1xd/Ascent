@@ -61,8 +61,7 @@ public class MusicCommand {
             }
         }
 
-        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(guild);
-        TrackScheduler scheduler = musicManager.getScheduler();
+
 
         LavalinkManager manager = LavalinkManager.INS;
 
@@ -100,6 +99,9 @@ public class MusicCommand {
 
                 manager.openConnection(memberChannel);
 
+                GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(guild);
+                TrackScheduler scheduler = musicManager.getScheduler();
+
                 scheduler.bindedChannel = ctx.getChannel();
                 cmd.handle(ctx);
             }
@@ -121,6 +123,9 @@ public class MusicCommand {
                 return;
             }
         }
+
+        GuildMusicManager musicManager = LavalinkPlayerManager.getInstance().getMusicManager(guild);
+        TrackScheduler scheduler = musicManager.getScheduler();
 
         scheduler.bindedChannel = ctx.getChannel();
         cmd.handle(ctx);

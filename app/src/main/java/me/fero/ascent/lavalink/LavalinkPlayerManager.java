@@ -46,6 +46,8 @@ public class LavalinkPlayerManager {
         playerManager.registerSourceManager(new TwitchStreamAudioSourceManager());
         playerManager.registerSourceManager(new BeamAudioSourceManager());
         playerManager.registerSourceManager(new HttpAudioSourceManager());
+
+        playerManager.getConfiguration().setFilterHotSwapEnabled(true);
     }
 
     public AudioPlayerManager getPlayerManager() {
@@ -75,7 +77,7 @@ public class LavalinkPlayerManager {
 
         GuildMusicManager musicManager = this.getMusicManager(channel.getGuild());
 
-        if(musicManager.getScheduler().queue.size() >= TrackScheduler.MAX_QUEUE_SIZE) {
+        if(!musicManager.getScheduler().canQueue()) {
             channel.sendMessageEmbeds(Embeds.createBuilder("Error!", "Max queue size reached", null, null, null).build()).queue();
             return null;
         }
