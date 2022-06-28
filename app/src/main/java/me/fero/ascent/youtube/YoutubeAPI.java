@@ -3,6 +3,7 @@ package me.fero.ascent.youtube;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
 
 import java.io.IOException;
@@ -56,5 +57,20 @@ public class YoutubeAPI {
                .setVideoCategoryId("categoryId")
                .execute()
                .getItems();
+    }
+
+    public static List searchByRelatedId(String id, String apiKey, long size) throws IOException {
+        SearchListResponse res =  youtube.search()
+                .list("snippet")
+                .setKey(apiKey)
+                .setType("video")
+                .setMaxResults(size)
+                .setFields("items(id/kind,id/videoId,snippet/title, snippet/channelTitle)")
+                .setRelatedToVideoId(id)
+                .execute();
+
+
+        String pageToken = res.getNextPageToken();
+        return List.of(res.getItems(), pageToken);
     }
 }

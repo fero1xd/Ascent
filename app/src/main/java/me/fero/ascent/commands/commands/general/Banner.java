@@ -1,6 +1,5 @@
 package me.fero.ascent.commands.commands.general;
 
-import me.fero.ascent.Config;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.objects.BaseCommand;
 import me.fero.ascent.objects.config.AscentConfig;

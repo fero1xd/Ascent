@@ -34,7 +34,8 @@ public class LavalinkManager {
 
         String id = getIdFromToken(AscentConfig.get("token"));
         lavalink = new JdaLavalink(id, 1, integer -> ascent.getJDA());
-        
+
+
         loadNodes();
     }
 
@@ -107,6 +108,8 @@ public class LavalinkManager {
         final JdaLavalink lavalink = getLavalink();
 
         for (final AscentConfig.Lavalink.LavalinkNode node : config.nodes) {
+            System.out.println(node.wsurl);
+            System.out.println(node.pass);
             lavalink.addNode(URI.create(node.wsurl), node.pass);
         }
     }

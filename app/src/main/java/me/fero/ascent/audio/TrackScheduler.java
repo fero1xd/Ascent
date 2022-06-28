@@ -1,6 +1,7 @@
 package me.fero.ascent.audio;
 
 
+import com.google.api.services.youtube.model.SearchResult;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -10,13 +11,16 @@ import lavalink.client.player.LavalinkPlayer;
 import lavalink.client.player.event.AudioEventAdapterWrapped;
 import me.fero.ascent.exceptions.LimitReachedException;
 import me.fero.ascent.lavalink.LavalinkManager;
+import me.fero.ascent.objects.config.AscentConfig;
 import me.fero.ascent.spotify.SpotifyAudioTrack;
 import me.fero.ascent.utils.Embeds;
+import me.fero.ascent.youtube.YoutubeAPI;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +29,9 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
 
     public List<AudioTrack> queue = new ArrayList<>();
     public boolean isRepeating = false;
+    public boolean isAutoPlay = true;
+    private String nextPageToken = null;
+
     public Guild currentGuild;
     public TextChannel bindedChannel;
     public Message lastSongEmbed;
@@ -92,6 +99,21 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
         }
     }
 
+
+    private void autoPlay(AudioTrack track) throws IOException {
+        String identifier = track.getIdentifier();
+
+        List results = YoutubeAPI.searchByRelatedId(identifier, AscentConfig.get("yt_key"), 1);
+
+        nextPageToken = results.get(1).toString();
+
+        List<SearchResult> res = (List<SearchResult>) results.get(0);
+
+        SearchResult searchResult = res.get(0);
+
+        System.out.println(searchResult.getSnippet().toString());
+    }
+
     // EVENTS
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
@@ -116,6 +138,15 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
                 return;
             }
             if(this.queue.isEmpty() && currentGuild != null) {
+                if(isAutoPlay) {
+                    try {
+                        autoPlay(track);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return;
+                }
+
                 LavalinkManager.INS.closeConnection(this.currentGuild);
                 return;
             }

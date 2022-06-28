@@ -39,6 +39,7 @@ public class GuildListener extends BaseListener {
             return;
         }
 
+
         final long guildId = event.getGuild().getIdLong();
         String prefix = this.redis.getPrefix(guildId);
 
