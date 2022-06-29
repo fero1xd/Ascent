@@ -29,8 +29,6 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
 
     public List<AudioTrack> queue = new ArrayList<>();
     public boolean isRepeating = false;
-    public boolean isAutoPlay = true;
-    private String nextPageToken = null;
 
     public Guild currentGuild;
     public TextChannel bindedChannel;
@@ -100,19 +98,6 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
     }
 
 
-    private void autoPlay(AudioTrack track) throws IOException {
-        String identifier = track.getIdentifier();
-
-        List results = YoutubeAPI.searchByRelatedId(identifier, AscentConfig.get("yt_key"), 1);
-
-        nextPageToken = results.get(1).toString();
-
-        List<SearchResult> res = (List<SearchResult>) results.get(0);
-
-        SearchResult searchResult = res.get(0);
-
-        System.out.println(searchResult.getSnippet().toString());
-    }
 
     // EVENTS
     @Override
@@ -138,15 +123,6 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
                 return;
             }
             if(this.queue.isEmpty() && currentGuild != null) {
-                if(isAutoPlay) {
-                    try {
-                        autoPlay(track);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return;
-                }
-
                 LavalinkManager.INS.closeConnection(this.currentGuild);
                 return;
             }
