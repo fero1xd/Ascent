@@ -13,7 +13,7 @@ import javax.annotation.Nonnull;
 import java.net.URI;
 import java.util.Base64;
 
-
+// Taken from https://github.com/DuncteBot/SkyBot/blob/main/src/main/java/fredboat/audio/player/LavalinkManager.java (Modified)
 public class LavalinkManager {
     public static LavalinkManager INS = new LavalinkManager();
     private JdaLavalink lavalink = null;
@@ -108,8 +108,6 @@ public class LavalinkManager {
         final JdaLavalink lavalink = getLavalink();
 
         for (final AscentConfig.Lavalink.LavalinkNode node : config.nodes) {
-            System.out.println(node.wsurl);
-            System.out.println(node.pass);
             lavalink.addNode(URI.create(node.wsurl), node.pass);
         }
     }

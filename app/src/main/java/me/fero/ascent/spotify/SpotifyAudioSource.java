@@ -40,6 +40,8 @@ import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+// Taken from https://github.com/DuncteBot/SkyBot/blob/main/src/main/java/ml/duncte123/skybot/audio/sourcemanagers/spotify/SpotifyAudioSourceManager.java (Added)
 public class SpotifyAudioSource implements AudioSourceManager, SpotifyAudioSourceManager {
     private SpotifyApi spi = null;
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseListener.class);

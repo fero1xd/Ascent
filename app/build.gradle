@@ -65,6 +65,9 @@ dependencies {
 
     // Lavalink Client
     implementation group: 'com.github.freyacodes', name: 'Lavalink-Client', version: '2b1b439'
+
+    // J sensor
+    implementation group: 'com.profesorfalken', name: 'jSensors', version: '2.2.1'
 }
 
 

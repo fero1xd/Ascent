@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.apache.http.util.ExceptionUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -133,7 +134,6 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
     @Override
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
         if(currentGuild!=null) {
-
             this.isRepeating = false;
             this.queue.clear();
             this.resetVotingSystem();
