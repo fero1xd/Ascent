@@ -68,6 +68,9 @@ dependencies {
 
     // J sensor
     implementation group: 'com.profesorfalken', name: 'jSensors', version: '2.2.1'
+
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+
 }
 
 

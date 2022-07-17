@@ -41,6 +41,11 @@ public class AudioLoader implements AudioLoadResultHandler {
 
     @Override
     public void trackLoaded(AudioTrack track) {
+        if(!this.musicManager.getScheduler().canQueue()) {
+            channel.sendMessageEmbeds(Embeds.createBuilder(null, "Queue is full", null, null, null).build()).queue();
+            return;
+        }
+
         track.setUserData(ctx.getAuthor().getIdLong());
 
         TrackScheduler scheduler = musicManager.getScheduler();
@@ -58,6 +63,11 @@ public class AudioLoader implements AudioLoadResultHandler {
 
     @Override
     public void playlistLoaded(AudioPlaylist playlist) {
+        if(!this.musicManager.getScheduler().canQueue()) {
+            channel.sendMessageEmbeds(Embeds.createBuilder(null, "Queue is full", null, null, null).build()).queue();
+            return;
+        }
+
         final List<AudioTrack> tracks = playlist.getTracks();
         TrackScheduler scheduler = musicManager.getScheduler();
 

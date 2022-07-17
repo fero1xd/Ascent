@@ -22,12 +22,10 @@ public class AscentConfig {
         public static class LavalinkNode {
             public final String wsurl;
             public final String pass;
-            public final String region;
 
-            public LavalinkNode(String wsurl, String pass, String region) {
+            public LavalinkNode(String wsurl, String pass) {
                 this.wsurl = wsurl;
                 this.pass = pass;
-                this.region = region;
             }
         }
     }
@@ -43,8 +41,7 @@ public class AscentConfig {
 
             res[i] = new Lavalink.LavalinkNode(
                     s[0],
-                    s[1],
-                    s[2]
+                    s[1]
             );
         }
 

@@ -6,22 +6,20 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import lavalink.client.io.filters.*;
 import lavalink.client.player.LavalinkPlayer;
 import lavalink.client.player.event.AudioEventAdapterWrapped;
 import me.fero.ascent.exceptions.LimitReachedException;
 import me.fero.ascent.lavalink.LavalinkManager;
-import me.fero.ascent.objects.config.AscentConfig;
 import me.fero.ascent.spotify.SpotifyAudioTrack;
 import me.fero.ascent.utils.Embeds;
-import me.fero.ascent.youtube.YoutubeAPI;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
-import org.apache.http.util.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +36,6 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
     public List<Member> totalMembers = new ArrayList<>();
     public Boolean votingGoingOn = false;
     public static int MAX_QUEUE_SIZE = 100;
-    private static float threedAmount = 0.2F;
 
     public boolean karaokeMode = false;
     public boolean threedMode = false;
@@ -133,7 +130,7 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
 
     @Override
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
-        if(currentGuild!=null) {
+        if(currentGuild != null) {
             this.isRepeating = false;
             this.queue.clear();
             this.resetVotingSystem();
@@ -142,6 +139,37 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
 
             LavalinkManager.INS.closeConnection(this.currentGuild);
         }
+
+        final Throwable rootCause = ExceptionUtils.getRootCause(exception);
+        final Throwable finalCause = rootCause == null ? exception : rootCause;
+        final AudioTrackInfo info = track.getInfo();
+
+        if (finalCause == null || finalCause.getMessage() == null) {
+            if(this.bindedChannel != null) {
+                this.bindedChannel.sendMessage("Something went terribly wrong when playing track with identifier `" + info.identifier +
+                        "`\nPlease contact the developers asap with the identifier in the message above").queue();
+            }
+            return;
+        }
+
+        if (finalCause.getMessage().contains("Something went wrong when decoding the track.")) {
+            return;
+        }
+
+        if (finalCause.getMessage().contains("age-restricted")) {
+            if(this.bindedChannel != null) {
+                this.bindedChannel.sendMessage("Cannot play `" + info.title + "` because it is age-restricted").queue();
+            }
+            return;
+        }
+
+        if(this.bindedChannel != null) {
+            this.bindedChannel.sendMessage("Something went wrong while playing track with identifier `" +
+                    info.identifier
+                    + "`, please contact the devs if this happens a lot.\n" +
+                    "Details: " + finalCause).queue();
+        }
+
         exception.printStackTrace();
     }
 

@@ -38,7 +38,6 @@ public class Ascent {
         DatabaseManager db = DatabaseManager.INSTANCE;
         RedisDataStore.getInstance();
 
-        SystemConfig.getCpuTemperature();
 
         EmbedUtils.setEmbedBuilder(
                 () -> new EmbedBuilder()
