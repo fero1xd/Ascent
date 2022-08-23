@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -49,8 +50,13 @@ public class Skip implements ICommand {
             return;
         }
 
+        List<Member> filteredMembers = new ArrayList<>();
 
-        List<Member> filteredMembers = vc.getMembers().stream().filter(member -> !member.getUser().isBot()).collect(Collectors.toList());
+        for(Member member : vc.getMembers()) {
+            if(!member.getUser().isBot()) {
+                filteredMembers.add(member);
+            }
+        }
 
         if(filteredMembers.size() >= 3) {
             scheduler.initializeVotingSystem(filteredMembers);

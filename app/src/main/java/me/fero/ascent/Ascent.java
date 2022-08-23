@@ -12,7 +12,6 @@ import me.fero.ascent.listeners.BotListener;
 import me.fero.ascent.listeners.ButtonListener;
 import me.fero.ascent.listeners.GuildListener;
 import me.fero.ascent.objects.config.AscentConfig;
-import me.fero.ascent.objects.config.SystemConfig;
 import me.fero.ascent.spotify.SpotifyAudioSource;
 import me.fero.ascent.spotify.SpotifyAudioSourceManager;
 import me.fero.ascent.utils.Waiter;

@@ -214,16 +214,16 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
     }
 
     public void initializeVotingSystem(List<Member> totalMembers) {
-        votingGoingOn = true;
-        votes.clear();
-        totalMembers.clear();
+        this.votingGoingOn = true;
+        this.votes.clear();
+        this.totalMembers.clear();
         this.totalMembers = totalMembers;
     }
 
     public void resetVotingSystem() {
-        votingGoingOn = false;
-        votes.clear();
-        totalMembers.clear();
+        this.votingGoingOn = false;
+        this.votes.clear();
+        this.totalMembers.clear();
     }
 
     // FILTERS

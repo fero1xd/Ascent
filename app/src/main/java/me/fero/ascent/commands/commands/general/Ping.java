@@ -1,10 +1,8 @@
 package me.fero.ascent.commands.commands.general;
 
-import com.profesorfalken.jsensors.model.sensors.Temperature;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.database.RedisDataStore;
 import me.fero.ascent.objects.BaseCommand;
-import me.fero.ascent.objects.config.SystemConfig;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
@@ -23,7 +21,6 @@ public class Ping extends BaseCommand {
     public void execute(CommandContext ctx) {
         JDA jda = ctx.getJDA();
         String prefix = RedisDataStore.getInstance().getPrefix(ctx.getGuild().getIdLong());
-        List<Temperature> cpuTemperature = SystemConfig.getCpuTemperature();
 
         jda.getRestPing().queue(
                 (__) -> {
@@ -40,12 +37,6 @@ public class Ping extends BaseCommand {
                     builder.addField("Prefix", "`" + prefix + "`", false);
                     builder.addField("Serving", "`" + ctx.getJDA().getGuilds().size() + " Guilds" + "`", true);
                     builder.addField("Members", "`" + amount + "`", true);
-
-                    if(cpuTemperature != null && !cpuTemperature.isEmpty()) {
-                        builder.addField("Temperature", "`" + cpuTemperature.get(0).value + "`", false);
-                    }
-
-
                     ctx.getChannel().sendMessageEmbeds(builder.build()).queue();
                 }
         );
