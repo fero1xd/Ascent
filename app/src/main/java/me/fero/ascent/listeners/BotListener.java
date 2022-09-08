@@ -27,8 +27,8 @@ public class BotListener extends BaseListener {
         this.service = Executors.newScheduledThreadPool(1, (r) -> new Thread(r, "Status-Update-Thread"));
 
         service.scheduleAtFixedRate(() -> {
+            List<Guild> guilds = jda.getGuilds();
             if(turn) {
-                List<Guild> guilds = jda.getGuilds();
                 long amount = 0;
                 for(Guild guild : guilds) {
                     amount += guild.getMemberCount();
@@ -36,7 +36,7 @@ public class BotListener extends BaseListener {
                 jda.getPresence().setActivity(Activity.playing("music for " + amount + " members"));
             }
             else {
-                jda.getPresence().setActivity(Activity.listening("help in " + event.getGuildTotalCount() + " Guilds"));
+                jda.getPresence().setActivity(Activity.listening("help in " + guilds.size() + " Guilds"));
             }
 
             turn = !turn;
