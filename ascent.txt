@@ -1,0 +1,34 @@
+# Ascent's verification details
+
+1. Application Detail
+Answer - Ascent is a discord bot which plays music in a voice, stage channel. It basically plays it from youtube music, soundcloud. We also use spotify official api in our bot.
+
+2. What discord data do you store ?
+Answer - We store Server ID's, User ID's
+
+3. Do you store message content ?
+Answer - No
+
+4. What purpose for storing info ?
+Answer - We store Server ID's for identification of a guild in our database and for custom bot prefix, User ID's for identification of user in our database.
+
+5. How long do you store it ?
+Answer - We store user id's as long as the user wants it in our database. A user can delete their id's from our database anytime they want.
+
+6. What is the process for users to request deletion of their data ?
+Answer - A user can delete their User ID from our database with a simple command
+
+7. How do you host your bot ?
+Answer - We currently use AWS for our hosting
+
+8. Lang ?
+Answer - JDA Java
+
+9. How do you keep your bot secure ?
+Answer - Our bot is very secure and our server too. There is key based authentication to get into the server. We all have 2 Fa Enabled in our discord accounts to get maximum security.
+
+10. How can user contact you ?
+Answer - They can join the support server for the bot and ping our team anytime they want. The link of the server will be available in the help command.
+
+11. Intents
+Answer - Presence, Server members, Message Content

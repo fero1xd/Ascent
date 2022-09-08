@@ -57,18 +57,4 @@ public class CooldownUtil {
         }
         return -1;
     }
-
-
-    // Very bad Solution
-//    public static void setTimeout(Runnable runnable, int delay){
-//        new Thread(() -> {
-//            try {
-//                Thread.sleep(delay);
-//                runnable.run();
-//            }
-//            catch (Exception e){
-//                e.printStackTrace();
-//            }
-//        }).start();
-//    }
 }

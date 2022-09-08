@@ -70,7 +70,7 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
     }
 
     public void addToQueue(AudioTrack track) throws LimitReachedException {
-        if (queue.size() + 1 >= MAX_QUEUE_SIZE) {
+        if (queue.size() >= MAX_QUEUE_SIZE) {
             throw new LimitReachedException("The queue is full", MAX_QUEUE_SIZE);
         }
 
