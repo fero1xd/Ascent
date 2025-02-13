@@ -34,7 +34,7 @@ public class Ascent {
         System.setProperty("http.agent", "Chrome");
         this.sp = (SpotifyAudioSource) SpotifyAudioSourceManager.INSTANCE;
 
-        DatabaseManager db = DatabaseManager.INSTANCE;
+        DatabaseManager _db = DatabaseManager.INSTANCE;
         RedisDataStore.getInstance();
 
 
@@ -52,6 +52,7 @@ public class Ascent {
                 GatewayIntent.GUILD_VOICE_STATES,
                 GatewayIntent.GUILD_MESSAGE_REACTIONS
                 );
+
 
         jda.disableCache(EnumSet.of(
                 CacheFlag.CLIENT_STATUS,

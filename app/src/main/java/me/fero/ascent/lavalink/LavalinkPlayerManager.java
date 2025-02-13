@@ -71,6 +71,7 @@ public class LavalinkPlayerManager {
         this.musicManagers.remove(guild.getIdLong());
     }
 
+    public HashMap<Long, GuildMusicManager> getMusicManagers() { return this.musicManagers; }
 
     public Future<Void> loadAndPlay(CommandContext ctx, String query, boolean announceTracks) {
         TextChannel channel = ctx.getChannel();

@@ -1,7 +1,9 @@
 package me.fero.ascent.commands.commands.general;
 
+import me.fero.ascent.audio.GuildMusicManager;
 import me.fero.ascent.commands.setup.CommandContext;
 import me.fero.ascent.database.RedisDataStore;
+import me.fero.ascent.lavalink.LavalinkPlayerManager;
 import me.fero.ascent.objects.BaseCommand;
 import me.fero.ascent.utils.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -21,6 +23,7 @@ public class Ping extends BaseCommand {
     public void execute(CommandContext ctx) {
         JDA jda = ctx.getJDA();
         String prefix = RedisDataStore.getInstance().getPrefix(ctx.getGuild().getIdLong());
+        int currentPlayers = LavalinkPlayerManager.getInstance().getMusicManagers().size();
 
         jda.getRestPing().queue(
                 (__) -> {
@@ -37,6 +40,7 @@ public class Ping extends BaseCommand {
                     builder.addField("Prefix", "`" + prefix + "`", false);
                     builder.addField("Serving", "`" + ctx.getJDA().getGuilds().size() + " Guilds" + "`", true);
                     builder.addField("Members", "`" + amount + "`", true);
+                    builder.addField("Currently playing music in", "`" + currentPlayers + " Guilds `", false);
                     ctx.getChannel().sendMessageEmbeds(builder.build()).queue();
                 }
         );

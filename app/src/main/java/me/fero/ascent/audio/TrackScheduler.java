@@ -95,8 +95,6 @@ public class TrackScheduler extends AudioEventAdapterWrapped {
         }
     }
 
-
-
     // EVENTS
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {

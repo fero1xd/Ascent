@@ -61,8 +61,6 @@ public class MusicCommand {
             }
         }
 
-
-
         LavalinkManager manager = LavalinkManager.INS;
 
         if(!manager.isConnected(guild)) {
